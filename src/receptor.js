@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // --- CONFIGURACIÓN DE URL (Local o Render) ---
+    // --- CONFIGURACIÓN DE URL (Render con respaldo local) ---
     const API_URL = window.location.hostname === 'localhost' 
         ? 'http://localhost:3000' 
-        : 'https://tu-proyecto.onrender.com'; // <--- Reemplaza con tu URL real de Render si es necesario
+        : 'https://appwebfoodlink.onrender.com';
 
     // --- GESTIÓN DE SESIÓN ---
     const usuarioActivo = obtenerSesion();
