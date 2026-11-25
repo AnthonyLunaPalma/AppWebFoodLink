@@ -287,9 +287,10 @@ app.post('/api/pedidos/:id/cancelar', async (req, res) => {
 // RUTAS DE USUARIOS Y AUTENTICACIÓN
 // ==========================================
 
-app.post('/api/registro', async (req, res) => {
+app.post('/api/registro', upload.single('documentos'), async (req, res) => {
     try {
         const { rol, nombre, correo, cuenta, contrasena } = req.body;
+        const archivo = req.file;
 
         if (!rol || !nombre || !correo || !cuenta || !contrasena) {
             return res.status(400).json({ error: 'Faltan campos obligatorios.' });
@@ -299,12 +300,43 @@ app.post('/api/registro', async (req, res) => {
             return res.status(400).json({ error: 'El formato del correo electrónico no es válido.' });
         }
 
+        let documentoUrl = null;
+
+        if (archivo) {
+            const nombreArchivoUnico = `${Date.now()}_${archivo.originalname}`;
+            
+            const { data: storageData, error: storageError } = await supabase.storage
+                .from('documentos-usuarios')
+                .upload(nombreArchivoUnico, archivo.buffer, {
+                    contentType: archivo.mimetype,
+                    upsert: false
+                });
+
+            if (storageError) {
+                console.error('Error al subir archivo a Storage:', storageError.message);
+                return res.status(500).json({ error: 'Error al subir el documento oficial.' });
+            }
+
+            const { data: publicUrlData } = supabase.storage
+                .from('documentos-usuarios')
+                .getPublicUrl(nombreArchivoUnico);
+
+            documentoUrl = publicUrlData.publicUrl;
+        }
+
         let rol_idrol = 1;
         if (rol === 'Donador') rol_idrol = 1;
         else if (rol === 'Receptor') rol_idrol = 2;
         else if (rol === 'Voluntario') rol_idrol = 3;
 
-        const nuevoUsuario = await crear({ nombre, correo, cuenta, contrasena, rol_idrol });
+        const nuevoUsuario = await crear({ 
+            nombre, 
+            correo, 
+            cuenta, 
+            contrasena, 
+            rol_idrol, 
+            documento_url: documentoUrl 
+        });
 
         res.status(201).json({ 
             mensaje: '¡Cuenta registrada con éxito!', 

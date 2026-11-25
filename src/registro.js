@@ -11,8 +11,10 @@ formRegistro.addEventListener('submit', async (e) => {
     const cuenta = document.getElementById('registro-cuenta').value;
     const contrasena = document.getElementById('registro-contrasena').value;
     const confirmar = document.getElementById('registro-confirmar').value;
+    
+    const inputFile = document.getElementById('registro-documentos');
+    const archivo = inputFile && inputFile.files[0] ? inputFile.files[0] : null;
 
-    // Validación local del correo usando expresiones regulares
     const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!regexCorreo.test(correo.trim())) {
         mensajeRegistro.style.color = 'red';
@@ -26,7 +28,6 @@ formRegistro.addEventListener('submit', async (e) => {
         return; 
     }
 
-    // 1. DESHABILITAR EL BOTÓN PARA EVITAR MÚLTIPLES CLICS
     if (btnSubmit) {
         btnSubmit.disabled = true;
         btnSubmit.style.opacity = '0.6';
@@ -35,12 +36,19 @@ formRegistro.addEventListener('submit', async (e) => {
     }
 
     try {
+        const formData = new FormData();
+        formData.append('rol', rol);
+        formData.append('nombre', nombre);
+        formData.append('correo', correo);
+        formData.append('cuenta', cuenta);
+        formData.append('contrasena', contrasena);
+        if (archivo) {
+            formData.append('documentos', archivo);
+        }
+
         const respuesta = await fetch('https://appwebfoodlink.onrender.com/api/registro', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ rol, nombre, correo, cuenta, contrasena })
+            body: formData
         });
         const resultado = await respuesta.json();
 
@@ -49,15 +57,12 @@ formRegistro.addEventListener('submit', async (e) => {
             mensajeRegistro.textContent = resultado.mensaje; 
             formRegistro.reset(); 
 
-            // Opcional: Redirigir al inicio de sesión después de 2 segundos para que el admin lo valide
             setTimeout(() => {
                 window.location.href = './iniciosesion.html';
             }, 2000);
         } else {
             mensajeRegistro.style.color = 'red';
             mensajeRegistro.textContent = resultado.error || 'No se pudo registrar.';
-            
-            // Si hubo un error del servidor, volvemos a habilitar el botón para que pueda corregir
             rehabilitarBoton();
         }
 
@@ -65,8 +70,6 @@ formRegistro.addEventListener('submit', async (e) => {
         console.error('Error de conexión:', error);
         mensajeRegistro.style.color = 'red';
         mensajeRegistro.textContent = 'Error al conectar con el servidor.';
-        
-        // Volvemos a habilitar el botón si falla la conexión
         rehabilitarBoton();
     }
 });
@@ -76,6 +79,6 @@ function rehabilitarBoton() {
         btnSubmit.disabled = false;
         btnSubmit.style.opacity = '1';
         btnSubmit.style.cursor = 'pointer';
-        btnSubmit.textContent = 'Registrarse'; // Cambia esto si tu botón tenía otro texto original
+        btnSubmit.textContent = 'Registrarse';
     }
 }
