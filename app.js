@@ -12,13 +12,152 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Obtener lotes aceptados y sus calificaciones actuales para evaluar
+app.get('/api/receptor/evaluaciones', async (req, res) => {
+    try {
+        const { receptor_id } = req.query;
+        if (!receptor_id) return res.status(400).json({ error: 'Falta receptor_id' });
+
+        // Obtener pedidos aceptados por este receptor junto con el donador
+        const { data: pedidos, error: errPedidos } = await supabase
+            .from('pedidos')
+            .select(`
+                idpedidos,
+                descripcion,
+                usuarios_idusuarios,
+                receptor_idusuarios,
+                status_idstatus,
+                calificacion_donador,
+                calificacion_voluntario,
+                donador:usuarios_idusuarios ( idusuarios, nombre, cuenta, reputacion )
+            `)
+            .eq('status_idstatus', 2)
+            .eq('receptor_idusuarios', receptor_id);
+
+        if (errPedidos) throw new Error(errPedidos.message);
+
+        // Obtener envíos para estos pedidos para encontrar al voluntario
+        const pedidoIds = pedidos.map(p => p.idpedidos);
+        let enviosMap = {};
+        if (pedidoIds.length > 0) {
+            const { data: envios, error: errEnvios } = await supabase
+                .from('envio')
+                .select(`
+                    idpedidos,
+                    usuarios_idusuarios,
+                    voluntario:usuarios_idusuarios ( idusuarios, nombre, cuenta, reputacion )
+                `)
+                .in('idpedidos', pedidoIds);
+
+            if (!errEnvios && envios) {
+                envios.forEach(e => {
+                    enviosMap[e.idpedidos] = e.voluntario;
+                });
+            }
+        }
+
+        const resultado = pedidos.map(p => ({
+            idpedidos: p.idpedidos,
+            descripcion: p.descripcion,
+            donador: p.donador,
+            voluntario: enviosMap[p.idpedidos] || null,
+            calificacion_donador: p.calificacion_donador,
+            calificacion_voluntario: p.calificacion_voluntario
+        }));
+
+        res.json(resultado);
+    } catch (error) {
+        console.error('Error al obtener datos de evaluación:', error);
+        res.status(500).json({ error: 'Error al obtener datos para evaluar.' });
+    }
+});
+
+// Registrar evaluación, actualizar pedido y recalcular promedio en la columna 'reputacion'
+app.post('/api/evaluar', async (req, res) => {
+    try {
+        const { lote_id, evaluado_id, tipo, estrellas } = req.body;
+
+        if (!lote_id || !evaluado_id || !tipo || !estrellas) {
+            return res.status(400).json({ error: 'Faltan datos obligatorios para la evaluación.' });
+        }
+
+        // 1. Actualizar la columna correspondiente en el pedido para bloquear reevaluaciones en este lote
+        const campoUpdate = tipo === 'donador' ? 'calificacion_donador' : 'calificacion_voluntario';
+        
+        const { data: pedidoActual } = await supabase
+            .from('pedidos')
+            .select(campoUpdate)
+            .eq('idpedidos', lote_id)
+            .single();
+
+        if (pedidoActual && pedidoActual[campoUpdate] !== null) {
+            return res.status(400).json({ error: 'Ya has evaluado a este usuario por este lote.' });
+        }
+
+        const { error: errPedido } = await supabase
+            .from('pedidos')
+            .update({ [campoUpdate]: Number(estrellas) })
+            .eq('idpedidos', lote_id);
+
+        if (errPedido) throw new Error(errPedido.message);
+
+        // 2. Buscar todos los pedidos donde este usuario haya sido evaluado como donador
+        const { data: pedidosDonador } = await supabase
+            .from('pedidos')
+            .select('calificacion_donador')
+            .eq('usuarios_idusuarios', evaluado_id)
+            .not('calificacion_donador', 'is', null);
+
+        // Buscar también si participó como voluntario en envíos evaluados
+        const { data: enviosUsuario } = await supabase
+            .from('envio')
+            .select('idpedidos')
+            .eq('usuarios_idusuarios', evaluado_id);
+
+        let calificacionesVoluntario = [];
+        if (enviosUsuario && enviosUsuario.length > 0) {
+            const ids = enviosUsuario.map(e => e.idpedidos);
+            const { data: pedEnvios } = await supabase
+                .from('pedidos')
+                .select('calificacion_voluntario')
+                .in('idpedidos', ids)
+                .not('calificacion_voluntario', 'is', null);
+            
+            if (pedEnvios) calificacionesVoluntario = pedEnvios;
+        }
+
+        // Recopilar todas las notas numéricas
+        let todasLasNotas = [
+            ...(pedidosDonador || []).map(p => Number(p.calificacion_donador)),
+            ...(calificacionesVoluntario || []).map(p => Number(p.calificacion_voluntario))
+        ];
+
+        // Calcular promedio decimal
+        const suma = todasLasNotas.reduce((acc, curr) => acc + curr, 0);
+        const promedio = todasLasNotas.length > 0 ? Number((suma / todasLasNotas.length).toFixed(2)) : Number(estrellas);
+
+        // 3. Actualizar la columna 'reputacion' en la tabla 'usuarios'
+        const { error: errUser } = await supabase
+            .from('usuarios')
+            .update({ reputacion: promedio })
+            .eq('idusuarios', evaluado_id);
+
+        if (errUser) throw new Error(errUser.message);
+
+        res.json({ mensaje: '¡Evaluación guardada con éxito!', promedio });
+    } catch (error) {
+        console.error('Error al registrar evaluación:', error);
+        res.status(500).json({ error: 'Error en el servidor al registrar la evaluación.' });
+    }
+});
+
 // Obtener envíos/rutas asignadas por usuario voluntario
 app.get('/api/envios', async (req, res) => {
     try {
         const { usuarios_idusuarios } = req.query;
 
         let query = supabase
-            .from('envio') // <--- Cambiado de 'envios' a 'envio'
+            .from('envio')
             .select('*');
 
         if (usuarios_idusuarios) {
@@ -39,7 +178,6 @@ app.get('/api/envios', async (req, res) => {
 // RUTAS DE PEDIDOS / LOTES
 // ==========================================
 
-/// Obtener todos los pedidos (incluyendo receptor_idusuarios para los filtros de sesión)
 app.get('/api/pedidos', async (req, res) => {
     try {
         const { usuarios_idusuarios, fecha } = req.query;
@@ -57,6 +195,8 @@ app.get('/api/pedidos', async (req, res) => {
                 tipos_idtipos, 
                 usuarios_idusuarios,
                 receptor_idusuarios,
+                calificacion_donador,
+                calificacion_voluntario,
                 usuarios:usuarios_idusuarios ( cuenta )
             `);
 
@@ -71,7 +211,6 @@ app.get('/api/pedidos', async (req, res) => {
                 .lte('caducidad', `${f}T23:59:59`);
         }
 
-        // Ordenar de forma descendente por ID (los más recientes primero)
         query = query.order('idpedidos', { ascending: false });
 
         const { data, error } = await query;
@@ -92,7 +231,6 @@ app.get('/api/pedidos', async (req, res) => {
     }
 });
 
-// Registrar nuevo lote
 app.post('/api/pedidos', upload.single('foto'), async (req, res) => {
     try {
         const { descripcion, caducidad, evaluador, tipo, tipos_idtipos, pesoKg, direccionSalida, usuarios_idusuarios } = req.body;
@@ -135,11 +273,10 @@ app.post('/api/pedidos', upload.single('foto'), async (req, res) => {
     }
 });
 
-// Aceptar lote (Cambia estatus a 2 y guarda el ID del receptor en la BD)
 app.post('/api/pedidos/:id/aceptar', async (req, res) => {
     try {
         const { id } = req.params;
-        const { usuarios_idusuarios } = req.body; // Recibimos el ID del receptor
+        const { usuarios_idusuarios } = req.body;
 
         const { data: loteActual, error: errorBusqueda } = await supabase
             .from('pedidos')
@@ -172,7 +309,6 @@ app.post('/api/pedidos/:id/aceptar', async (req, res) => {
     }
 });
 
-// Cancelar lote (Regresa a estatus 1 y limpia el receptor_idusuarios)
 app.post('/api/pedidos/:id/cancelar', async (req, res) => {
     try {
         const { id } = req.params;
@@ -181,7 +317,9 @@ app.post('/api/pedidos/:id/cancelar', async (req, res) => {
             .from('pedidos')
             .update({ 
                 status_idstatus: 1, 
-                receptor_idusuarios: null 
+                receptor_idusuarios: null,
+                calificacion_donador: null,
+                calificacion_voluntario: null
             })
             .eq('idpedidos', id)
             .select();

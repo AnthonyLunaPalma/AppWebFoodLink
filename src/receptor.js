@@ -37,7 +37,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- CONTENEDORES EN EL HTML ---
     const contenedorDisponibles = document.getElementById('lista-lotes-disponibles');
     const contenedorAceptados = document.getElementById('lista-lotes-receptor');
-    const contenedorPerfil = document.getElementById('perfil-receptor'); // Corregido según receptor.html
+    const contenedorPerfil = document.getElementById('perfil-receptor');
+    const contenedorEvaluar = document.getElementById('lista-lotes-evaluar'); // NUEVO CONTENEDOR PARA EVALUAR
 
     const TIPOS_NOMBRES = {
         1: "Lácteos y derivados",
@@ -50,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         8: "Azúcares y dulces"
     };
 
-    // --- CARGAR DATOS DE AMBAS SECCIONES EN TARJETAS ---
+    // --- CARGAR DATOS GENERALES Y DE EVALUACIÓN ---
     async function cargarDatosReceptor() {
         try {
             if (contenedorDisponibles) contenedorDisponibles.innerHTML = '<p class="texto-descripcion">Cargando...</p>';
@@ -70,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const lotesAceptados = lotes
                 .filter(l => Number(l.status_idstatus) === 2 && Number(l.receptor_idusuarios) === Number(idUsuarioActual));
 
-            // --- RENDERIZAR PERFIL Y TARJETA DE ESTADÍSTICA ABAJO ---
+            // --- RENDERIZAR PERFIL ---
             if (contenedorPerfil) {
                 contenedorPerfil.style.cssText = 'display: flex; flex-direction: column; gap: 12px;';
                 contenedorPerfil.innerHTML = `
@@ -117,7 +118,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // --- RENDERIZAR TARJETAS ACEPTADOS (SIN PIN) ---
+            // --- RENDERIZAR TARJETAS ACEPTADOS ---
             if (contenedorAceptados) {
                 contenedorAceptados.innerHTML = '';
                 if (lotesAceptados.length === 0) {
@@ -148,10 +149,129 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
+            // --- CARGAR SECCIÓN DE EVALUACIÓN ---
+            await cargarDatosEvaluacion();
+
         } catch (error) {
             console.error('Error al cargar datos:', error);
         }
     }
+
+    // --- CARGAR Y RENDERIZAR EVALUACIONES DE PARTICIPANTES ---
+    async function cargarDatosEvaluacion() {
+        if (!contenedorEvaluar) return;
+        try {
+            contenedorEvaluar.innerHTML = '<p class="texto-descripcion">Cargando evaluaciones...</p>';
+            const respuesta = await fetch(`${API_URL}/api/receptor/evaluaciones?receptor_id=${idUsuarioActual}`);
+            const data = await respuesta.json();
+
+            contenedorEvaluar.innerHTML = '';
+            if (!Array.isArray(data) || data.length === 0) {
+                contenedorEvaluar.innerHTML = '<p class="texto-descripcion">No hay lotes aceptados para evaluar.</p>';
+                return;
+            }
+
+            contenedorEvaluar.style.cssText = 'display: flex; flex-direction: column; gap: 12px;';
+            data.forEach(item => {
+                const tarjeta = document.createElement('div');
+                tarjeta.className = 'tarjeta-evaluacion';
+                tarjeta.style.cssText = 'background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 12px;';
+
+                let htmlDonador = '';
+                if (item.donador) {
+                    if (item.calificacion_donador !== null) {
+                        htmlDonador = `<p style="margin: 0; font-size: 0.9rem; color: #28a745;">✓ Donador (${item.donador.nombre}) ya evaluado con ${item.calificacion_donador} ⭐</p>`;
+                    } else {
+                        htmlDonador = `
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <label style="font-size: 0.9rem;"><strong>Donador:</strong> ${item.donador.nombre} (${item.donador.cuenta})</label>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <select id="estrellas-donador-${item.idpedidos}" style="padding: 4px; border-radius: 4px;">
+                                        <option value="5">5 Estrellas ⭐⭐⭐⭐⭐</option>
+                                        <option value="4">4 Estrellas ⭐⭐⭐⭐</option>
+                                        <option value="3">3 Estrellas ⭐⭐⭐</option>
+                                        <option value="2">2 Estrellas ⭐⭐</option>
+                                        <option value="1">1 Estrella ⭐</option>
+                                    </select>
+                                    <button type="button" onclick="enviarEvaluacion(${item.idpedidos}, ${item.donador.idusuarios}, 'donador', this)" style="padding: 4px 10px; background: #5c3a40; color: white; border: none; border-radius: 4px; cursor: pointer;">Evaluar Donador</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    htmlDonador = `<p style="margin: 0; font-size: 0.9rem; color: #888;">Donador no disponible.</p>`;
+                }
+
+                let htmlVoluntario = '';
+                if (item.voluntario) {
+                    if (item.calificacion_voluntario !== null) {
+                        htmlVoluntario = `<p style="margin: 0; font-size: 0.9rem; color: #28a745; margin-top: 8px;">✓ Voluntario (${item.voluntario.nombre}) ya evaluado con ${item.calificacion_voluntario} ⭐</p>`;
+                    } else {
+                        htmlVoluntario = `
+                            <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 8px;">
+                                <label style="font-size: 0.9rem;"><strong>Voluntario:</strong> ${item.voluntario.nombre} (${item.voluntario.cuenta})</label>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <select id="estrellas-voluntario-${item.idpedidos}" style="padding: 4px; border-radius: 4px;">
+                                        <option value="5">5 Estrellas ⭐⭐⭐⭐⭐</option>
+                                        <option value="4">4 Estrellas ⭐⭐⭐⭐</option>
+                                        <option value="3">3 Estrellas ⭐⭐⭐</option>
+                                        <option value="2">2 Estrellas ⭐⭐</option>
+                                        <option value="1">1 Estrella ⭐</option>
+                                    </select>
+                                    <button type="button" onclick="enviarEvaluacion(${item.idpedidos}, ${item.voluntario.idusuarios}, 'voluntario', this)" style="padding: 4px 10px; background: #5c3a40; color: white; border: none; border-radius: 4px; cursor: pointer;">Evaluar Voluntario</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    htmlVoluntario = `<p style="margin: 0; font-size: 0.9rem; color: #888; margin-top: 8px;">Sin voluntario asignado en este lote.</p>`;
+                }
+
+                tarjeta.innerHTML = `
+                    <div style="border-bottom: 1px solid #eee; padding-bottom: 6px;">
+                        <span style="font-weight: bold; color: #5c3a40;">Lote #${item.idpedidos}</span> - <span style="font-size: 0.9rem; color: #666;">${item.descripcion}</span>
+                    </div>
+                    ${htmlDonador}
+                    ${htmlVoluntario}
+                `;
+                contenedorEvaluar.appendChild(tarjeta);
+            });
+        } catch (err) {
+            console.error('Error al cargar evaluaciones:', err);
+        }
+    }
+
+    // --- FUNCIÓN GLOBAL PARA ENVIAR EVALUACIÓN ---
+    window.enviarEvaluacion = async function(loteId, evaluadoId, tipo, btn) {
+        const select = document.getElementById(`estrellas-${tipo}-${loteId}`);
+        const estrellas = select ? select.value : 5;
+
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+
+        try {
+            const respuesta = await fetch(`${API_URL}/api/evaluar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    lote_id: loteId,
+                    evaluado_id: evaluadoId,
+                    tipo: tipo,
+                    estrellas: Number(estrellas)
+                })
+            });
+
+            const resultado = await respuesta.json();
+            if (!respuesta.ok) throw new Error(resultado.error || 'Error al guardar');
+
+            alert(resultado.mensaje);
+            await cargarDatosReceptor();
+        } catch (err) {
+            alert('Error: ' + err.message);
+            btn.disabled = false;
+            btn.textContent = `Evaluar ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+        }
+    };
 
     // --- FUNCIÓN GLOBAL PARA ACEPTAR O CANCELAR ---
     window.cambiarEstatusLote = async function(idpedidos, accion, btn) {
