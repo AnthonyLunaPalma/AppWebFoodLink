@@ -1,4 +1,9 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // --- CONFIGURACIÓN DE URL (Local o Render) ---
+    const API_URL = window.location.hostname === 'localhost' 
+        ? 'http://localhost:3000' 
+        : 'https://tu-proyecto.onrender.com'; // <--- Reemplaza con tu URL real de Render si es necesario
+
     // --- GESTIÓN DE SESIÓN ---
     const usuarioActivo = obtenerSesion();
     const spanUsuario = document.getElementById('texto-usuario');
@@ -32,9 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- CONTENEDORES EN EL HTML ---
     const contenedorDisponibles = document.getElementById('lista-lotes-disponibles');
     const contenedorAceptados = document.getElementById('lista-lotes-receptor');
-    
-    // Contenedor o sección de perfil abajo (buscamos o creamos el espacio si no está definido explícitamente)
-    let seccionPerfilAbajo = document.getElementById('seccion-perfil-receptor');
+    const seccionPerfilAbajo = document.getElementById('seccion-perfil-receptor');
 
     const TIPOS_NOMBRES = {
         1: "Lácteos y derivados",
@@ -53,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (contenedorDisponibles) contenedorDisponibles.innerHTML = '<p class="texto-descripcion">Cargando...</p>';
             if (contenedorAceptados) contenedorAceptados.innerHTML = '<p class="texto-descripcion">Cargando...</p>';
 
-            const respuesta = await fetch('http://localhost:3000/api/pedidos');
+            const respuesta = await fetch(`${API_URL}/api/pedidos`);
             let lotes = await respuesta.json();
 
             if (!Array.isArray(lotes)) lotes = [];
@@ -73,21 +76,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!contenedorPerfil) {
                     contenedorPerfil = document.createElement('div');
                     contenedorPerfil.id = 'perfil-usuario-abajo';
-                    seccionPerfilAbajo.appendChild(contenedorPerfil);
+                    if (seccionPerfilAbajo) seccionPerfilAbajo.appendChild(contenedorPerfil);
                 }
 
-                contenedorPerfil.style.cssText = 'display: flex; flex-direction: column; gap: 12px; margin-top: 20px;';
-                contenedorPerfil.innerHTML = `
-                    <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 8px;">
-                        <h3 style="margin: 0; color: #5c3a40; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 6px;">Mi Perfil</h3>
-                        <p style="margin: 0; font-size: 0.95rem;"><strong>Nombre:</strong> ${usuarioActivo.nombre}</p>
-                        <p style="margin: 0; font-size: 0.95rem;"><strong>Cuenta:</strong> ${usuarioActivo.cuenta}</p>
-                    </div>
-                    <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.95rem; font-weight: bold; color: #5c3a40;">Total de lotes aceptados:</span>
-                        <span style="background: #5c3a40; color: white; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 1rem;">${lotesAceptados.length}</span>
-                    </div>
-                `;
+                if (contenedorPerfil) {
+                    contenedorPerfil.style.cssText = 'display: flex; flex-direction: column; gap: 12px; margin-top: 20px;';
+                    contenedorPerfil.innerHTML = `
+                        <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 8px;">
+                            <h3 style="margin: 0; color: #5c3a40; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 6px;">Mi Perfil</h3>
+                            <p style="margin: 0; font-size: 0.95rem;"><strong>Nombre:</strong> ${usuarioActivo.nombre}</p>
+                            <p style="margin: 0; font-size: 0.95rem;"><strong>Cuenta:</strong> ${usuarioActivo.cuenta}</p>
+                        </div>
+                        <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.95rem; font-weight: bold; color: #5c3a40;">Total de lotes aceptados:</span>
+                            <span style="background: #5c3a40; color: white; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 1rem;">${lotesAceptados.length}</span>
+                        </div>
+                    `;
+                }
             }
 
             // --- RENDERIZAR TARJETAS DISPONIBLES ---
@@ -167,8 +172,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             const endpoint = accion === 'aceptar' 
-                ? `http://localhost:3000/api/pedidos/${idpedidos}/aceptar`
-                : `http://localhost:3000/api/pedidos/${idpedidos}/cancelar`;
+                ? `${API_URL}/api/pedidos/${idpedidos}/aceptar`
+                : `${API_URL}/api/pedidos/${idpedidos}/cancelar`;
 
             const opcionesFetch = {
                 method: 'POST',
@@ -182,7 +187,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             await cargarDatosReceptor();
         } catch (err) {
-            if (textoErrorLote) textoErrorL0te = err.message; // corrección tipográfica menor
             if (textoErrorLote) textoErrorLote.textContent = err.message;
             if (modalNoDisponible) {
                 modalNoDisponible.style.display = 'flex';
