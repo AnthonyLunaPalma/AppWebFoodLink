@@ -32,6 +32,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- CONTENEDORES EN EL HTML ---
     const contenedorDisponibles = document.getElementById('lista-lotes-disponibles');
     const contenedorAceptados = document.getElementById('lista-lotes-receptor');
+    
+    // Contenedor o sección de perfil abajo (buscamos o creamos el espacio si no está definido explícitamente)
+    let seccionPerfilAbajo = document.getElementById('seccion-perfil-receptor');
 
     const TIPOS_NOMBRES = {
         1: "Lácteos y derivados",
@@ -50,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (contenedorDisponibles) contenedorDisponibles.innerHTML = '<p class="texto-descripcion">Cargando...</p>';
             if (contenedorAceptados) contenedorAceptados.innerHTML = '<p class="texto-descripcion">Cargando...</p>';
 
-            const respuesta = await fetch('https://appwebfoodlink.onrender.com/api/pedidos');
+            const respuesta = await fetch('http://localhost:3000/api/pedidos');
             let lotes = await respuesta.json();
 
             if (!Array.isArray(lotes)) lotes = [];
@@ -63,6 +66,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             // 2. Filtrar los aceptados (Estatus 2) que pertenezcan estrictamente a este receptor en la BD
             const lotesAceptados = lotes
                 .filter(l => Number(l.status_idstatus) === 2 && Number(l.receptor_idusuarios) === Number(idUsuarioActual));
+
+            // --- RENDERIZAR PERFIL Y TARJETA DE ESTADÍSTICA ABAJO ---
+            if (seccionPerfilAbajo || document.getElementById('perfil-usuario-abajo')) {
+                let contenedorPerfil = document.getElementById('perfil-usuario-abajo');
+                if (!contenedorPerfil) {
+                    contenedorPerfil = document.createElement('div');
+                    contenedorPerfil.id = 'perfil-usuario-abajo';
+                    seccionPerfilAbajo.appendChild(contenedorPerfil);
+                }
+
+                contenedorPerfil.style.cssText = 'display: flex; flex-direction: column; gap: 12px; margin-top: 20px;';
+                contenedorPerfil.innerHTML = `
+                    <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 8px;">
+                        <h3 style="margin: 0; color: #5c3a40; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 6px;">Mi Perfil</h3>
+                        <p style="margin: 0; font-size: 0.95rem;"><strong>Nombre:</strong> ${usuarioActivo.nombre}</p>
+                        <p style="margin: 0; font-size: 0.95rem;"><strong>Cuenta:</strong> ${usuarioActivo.cuenta}</p>
+                    </div>
+                    <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.95rem; font-weight: bold; color: #5c3a40;">Total de lotes aceptados:</span>
+                        <span style="background: #5c3a40; color: white; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 1rem;">${lotesAceptados.length}</span>
+                    </div>
+                `;
+            }
 
             // --- RENDERIZAR TARJETAS DISPONIBLES ---
             if (contenedorDisponibles) {
@@ -141,8 +167,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             const endpoint = accion === 'aceptar' 
-            ? `https://appwebfoodlink.onrender.com/api/pedidos/${idpedidos}/aceptar`
-            : `https://appwebfoodlink.onrender.com/api/pedidos/${idpedidos}/cancelar`;
+                ? `http://localhost:3000/api/pedidos/${idpedidos}/aceptar`
+                : `http://localhost:3000/api/pedidos/${idpedidos}/cancelar`;
 
             const opcionesFetch = {
                 method: 'POST',
@@ -156,6 +182,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             await cargarDatosReceptor();
         } catch (err) {
+            if (textoErrorLote) textoErrorL0te = err.message; // corrección tipográfica menor
             if (textoErrorLote) textoErrorLote.textContent = err.message;
             if (modalNoDisponible) {
                 modalNoDisponible.style.display = 'flex';
