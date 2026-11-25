@@ -36,10 +36,15 @@ body.dark-mode footer {
     border-top: 2px solid var(--border-soft) !important;
 }
 
-/* Paneles, bloques y tarjetas generales */
+/* ==========================================
+   CONTENEDORES, TARJETAS Y FORMULARIOS (ROJIZOS)
+   ========================================== */
 body.dark-mode .panel,
 body.dark-mode .bloque,
 body.dark-mode .bloque-bienvenida,
+body.dark-mode .formulario,
+body.dark-mode form,
+body.dark-mode .vista:not(#pagina-index),
 body.dark-mode .tarjeta-lote,
 body.dark-mode .tarjeta-lote-aceptado,
 body.dark-mode .modal-contenido {
@@ -48,10 +53,11 @@ body.dark-mode .modal-contenido {
     border-color: var(--border-soft) !important;
 }
 
-/* Textos generales */
+/* Textos generales y etiquetas en modo oscuro */
 body.dark-mode p,
 body.dark-mode span,
 body.dark-mode label,
+body.dark-mode .etiqueta,
 body.dark-mode .texto-descripcion {
     color: var(--text-muted) !important;
 }
@@ -61,7 +67,8 @@ body.dark-mode h1,
 body.dark-mode h2,
 body.dark-mode h3,
 body.dark-mode .titulo-logo,
-body.dark-mode .titulo-bloque {
+body.dark-mode .titulo-bloque,
+body.dark-mode .titulo-seccion {
     color: var(--accent-primary) !important;
 }
 
@@ -85,6 +92,20 @@ body.dark-mode select:focus {
 
 body.dark-mode a {
     color: var(--link-color) !important;
+}
+
+/* Botón específico de Iniciar sesión en el header */
+body.dark-mode #btn-nav-login,
+body.dark-mode header #btn-nav-login {
+    background-color: var(--bg-main) !important;
+    color: var(--accent-primary) !important;
+    border: 1px solid var(--border-soft) !important;
+}
+
+body.dark-mode #btn-nav-login:hover,
+body.dark-mode header #btn-nav-login:hover {
+    background-color: var(--bg-card) !important;
+    border-color: var(--accent-primary) !important;
 }
 
 /* ==========================================
@@ -155,30 +176,4 @@ input:checked + .slider {
 input:checked + .slider:before {
     transform: translateX(22px);
     background-color: #03071E;
-}
-
-/* Hacer que el botón de Iniciar sesión en el header tenga el fondo del color de la página */
-body.dark-mode #btn-nav-login,
-body.dark-mode header #btn-nav-login {
-    background-color: var(--bg-main) !important;
-    color: var(--accent-primary) !important;
-    border: 1px solid var(--border-soft) !important;
-}
-
-body.dark-mode #btn-nav-login:hover,
-body.dark-mode header #btn-nav-login:hover {
-    background-color: var(--bg-card) !important;
-    border-color: var(--accent-primary) !important;
-}
-
-/* Contenedores de formularios y tarjetas principales en modo oscuro */
-body.dark-mode .formulario,
-body.dark-mode form,
-body.dark-mode div[style*="background: #fff"],
-body.dark-mode div[style*="background: white"],
-body.dark-mode div[style*="background-color: #fff"],
-body.dark-mode div[style*="background-color: white"] {
-    background-color: var(--bg-card) !important;
-    color: var(--text-main) !important;
-    border-color: var(--border-soft) !important;
 }
