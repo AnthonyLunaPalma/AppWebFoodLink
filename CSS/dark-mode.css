@@ -1,5 +1,5 @@
 /* ==========================================
-   PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
+    PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
    ========================================== */
 body.dark-mode {
     --bg-main: #03071E;          /* ink-black */
@@ -22,7 +22,7 @@ body.dark-mode {
 }
 
 /* ==========================================
-   ENCABEZADO Y FOOTER (Transparentes con línea fina)
+    ENCABEZADO Y FOOTER (Transparentes con línea fina)
    ========================================== */
 body.dark-mode .encabezado,
 body.dark-mode header {
@@ -37,12 +37,25 @@ body.dark-mode footer {
 }
 
 /* ==========================================
-   VISTAS Y FORMULARIOS (ROJIZOS Y AJUSTADOS)
+    CORRECCIÓN DE VISTAS Y TÍTULOS FUERA DEL BLOQUE ROJO
    ========================================== */
 body.dark-mode .vista {
     background-color: transparent !important;
 }
 
+/* Forzar que los títulos y encabezados de sección queden fuera del cuadro rojizo */
+body.dark-mode h2.titulo-seccion,
+body.dark-mode h3,
+body.dark-mode #titulo-login,
+body.dark-mode .vista > h2,
+body.dark-mode .vista > h3 {
+    background-color: transparent !important;
+    color: var(--accent-primary) !important;
+}
+
+/* ==========================================
+    FORMULARIO Y CONTENEDORES AISLADOS (ROJIZOS)
+   ========================================== */
 body.dark-mode .formulario,
 body.dark-mode form,
 body.dark-mode .panel,
@@ -56,6 +69,41 @@ body.dark-mode .modal-contenido {
     border: 1px solid var(--border-soft) !important;
     border-radius: 12px !important;
     box-sizing: border-box;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    margin-bottom: 24px; /* Evita que se conecten con secciones inferiores */
+}
+
+/* Eliminar líneas verticales extrañas en campos e inputs */
+body.dark-mode .grupo-campo,
+body.dark-mode .campo-contenedor {
+    border: none !important;
+    background: transparent !important;
+}
+
+/* ==========================================
+    TABLAS Y CAJAS BLANCAS RESIDUALES
+   ========================================== */
+/* Forzar que cualquier tabla, contenedor de aviso o deslinde adopte el fondo oscuro/rojizo */
+body.dark-mode table,
+body.dark-mode .tabla-lotes,
+body.dark-mode div[style*="background: #fff"],
+body.dark-mode div[style*="background: white"],
+body.dark-mode div[style*="background-color: #fff"],
+body.dark-mode div[style*="background-color: white"] {
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    border-color: var(--border-soft) !important;
+}
+
+body.dark-mode th,
+body.dark-mode td {
+    background-color: transparent !important;
+    color: var(--text-muted) !important;
+    border-color: var(--border-soft) !important;
+}
+
+body.dark-mode tr:hover td {
+    background-color: rgba(106, 4, 15, 0.3) !important;
 }
 
 /* Textos generales y etiquetas en modo oscuro */
@@ -67,18 +115,7 @@ body.dark-mode .texto-descripcion {
     color: var(--text-muted) !important;
 }
 
-/* Títulos */
-body.dark-mode h1,
-body.dark-mode h2,
-body.dark-mode h3,
-body.dark-mode .titulo-logo,
-body.dark-mode .titulo-bloque,
-body.dark-mode .titulo-seccion {
-    color: var(--accent-primary) !important;
-    background-color: transparent !important;
-}
-
-/* Inputs de formularios (excluyendo botones) */
+/* Inputs y selects de formularios */
 body.dark-mode input:not([type="submit"]):not([type="button"]):not([type="checkbox"]),
 body.dark-mode select,
 body.dark-mode textarea {
@@ -92,8 +129,10 @@ body.dark-mode input::placeholder {
 }
 
 body.dark-mode input:focus,
-body.dark-mode select:focus {
+body.dark-mode select:focus,
+body.dark-mode textarea:focus {
     border-color: var(--border-hover) !important;
+    outline: none;
 }
 
 body.dark-mode a {
@@ -101,7 +140,7 @@ body.dark-mode a {
 }
 
 /* ==========================================
-   BOTONES ESPECÍFICOS
+    BOTONES ESPECÍFICOS
    ========================================== */
 /* Botón de Iniciar sesión en el header */
 body.dark-mode #btn-nav-login,
@@ -117,7 +156,7 @@ body.dark-mode header #btn-nav-login:hover {
     border-color: var(--accent-primary) !important;
 }
 
-/* Botón "Regístrate" dentro del formulario (con sus bordes redondeados y tamaño original) */
+/* Botones secundarios dentro de formularios */
 body.dark-mode .formulario button[type="button"],
 body.dark-mode #btn-login-a-registro {
     cursor: pointer;
@@ -135,17 +174,12 @@ body.dark-mode #btn-login-a-registro {
 body.dark-mode .formulario button[type="button"]:hover,
 body.dark-mode #btn-login-a-registro:hover {
     background-color: var(--link-color) !important;
-    text-decoration: none;
-    border-color: var(--link-color) !important;
     color: var(--bg-main) !important;
-    border-radius: 30px !important;
-    border: 2px solid var(--link-color) !important;
-    padding: 10px !important;
-    transition: background-color 0.4s ease, color 0.4s ease;
+    border-color: var(--link-color) !important;
 }
 
 /* ==========================================
-   ESTILO DEL SWITCH FLOTANTE
+    ESTILO DEL SWITCH FLOTANTE
    ========================================== */
 .theme-switch-wrapper {
     position: fixed;
