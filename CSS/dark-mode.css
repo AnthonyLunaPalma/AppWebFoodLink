@@ -21,12 +21,19 @@ body.dark-mode {
     color: var(--text-main) !important;
 }
 
-/* Encabezados y pies de página */
+/* ==========================================
+   ENCABEZADO Y FOOTER (Transparentes con línea fina)
+   ========================================== */
 body.dark-mode .encabezado,
-body.dark-mode header,
-body.dark-mode .pie-pagina {
-    background-color: var(--bg-card) !important;
-    border-color: var(--border-soft) !important;
+body.dark-mode header {
+    background-color: transparent !important;
+    border-bottom: 2px solid var(--border-soft) !important;
+}
+
+body.dark-mode .pie-pagina,
+body.dark-mode footer {
+    background-color: transparent !important;
+    border-top: 2px solid var(--border-soft) !important;
 }
 
 /* Paneles, bloques y tarjetas generales */
@@ -58,7 +65,7 @@ body.dark-mode .titulo-bloque {
     color: var(--accent-primary) !important;
 }
 
-/* Inputs de formularios (excluyendo botones para que no tengan bordes raros) */
+/* Inputs de formularios (excluyendo botones) */
 body.dark-mode input:not([type="submit"]):not([type="button"]):not([type="checkbox"]),
 body.dark-mode select,
 body.dark-mode textarea {
