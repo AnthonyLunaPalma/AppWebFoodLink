@@ -1,5 +1,5 @@
 /* ==========================================
-    PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
+   PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
    ========================================== */
 body.dark-mode {
     --bg-main: #03071E;          /* ink-black */
@@ -117,24 +117,31 @@ body.dark-mode header #btn-nav-login:hover {
     border-color: var(--accent-primary) !important;
 }
 
-/* Botón "Regístrate" dentro del formulario (con tono rojizo y bordes redondeados) */
+/* Botón "Regístrate" dentro del formulario (con sus bordes redondeados y tamaño original) */
 body.dark-mode .formulario button[type="button"],
 body.dark-mode #btn-login-a-registro {
-    background-color: var(--bg-card) !important;
-    color: var(--accent-primary) !important;
-    border: 1px solid var(--border-soft) !important;
-    border-radius: 20px !important;
-    padding: 4px 14px !important;
-    font-weight: bold;
     cursor: pointer;
+    font-weight: bold;
+    color: var(--accent-primary) !important;
+    background-color: var(--bg-card) !important;
+    text-decoration: none;
+    border-color: var(--accent-primary) !important;
+    border-radius: 30px !important;
+    border: 2px solid var(--accent-primary) !important;
+    padding: 10px !important;
     display: inline-block;
-    transition: background 0.3s, border-color 0.3s;
 }
 
 body.dark-mode .formulario button[type="button"]:hover,
 body.dark-mode #btn-login-a-registro:hover {
-    background-color: var(--border-soft) !important;
-    border-color: var(--accent-primary) !important;
+    background-color: var(--link-color) !important;
+    text-decoration: none;
+    border-color: var(--link-color) !important;
+    color: var(--bg-main) !important;
+    border-radius: 30px !important;
+    border: 2px solid var(--link-color) !important;
+    padding: 10px !important;
+    transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 /* ==========================================
