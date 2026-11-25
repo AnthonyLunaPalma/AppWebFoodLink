@@ -1,6 +1,6 @@
 const supabase = require('../DB/DB_supabaseClient');
 
-const COLUMNAS_PUBLICAS = 'idusuarios, nombre, rol_idrol, cuenta, correo, estado_idestado';
+const COLUMNAS_PUBLICAS = 'idusuarios, nombre, rol_idrol, cuenta, correo, estado_idestado, documento_url';
 
 // Consultar usuarios activos (con límite de 15 más recientes o filtrados por búsqueda)
 async function listar(busqueda = '') {
@@ -57,8 +57,8 @@ async function obtenerPorId(idusuarios) {
     return data;    
 }
 
-// Crear un usuario con estado por defecto 2 (Sin validar)
-async function crear({ nombre, correo, cuenta, contrasena, rol_idrol }) {
+// Crear un usuario con estado por defecto 2 (Sin validar) incluyendo documento_url
+async function crear({ nombre, correo, cuenta, contrasena, rol_idrol, documento_url }) {
     const { data, error } = await supabase
         .from('usuarios')
         .insert([{
@@ -67,7 +67,8 @@ async function crear({ nombre, correo, cuenta, contrasena, rol_idrol }) {
             cuenta,
             contrasena,
             rol_idrol,
-            estado_idestado: 2
+            estado_idestado: 2,
+            documento_url
         }])
         .select('idusuarios')
         .single();
