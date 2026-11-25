@@ -1,5 +1,5 @@
 /* ==========================================
-    PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
+   PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
    ========================================== */
 body.dark-mode {
     --bg-main: #03071E;          /* ink-black */
@@ -22,7 +22,7 @@ body.dark-mode {
 }
 
 /* ==========================================
-    ENCABEZADO Y FOOTER (Transparentes con línea fina)
+   ENCABEZADO Y FOOTER (Transparentes con línea fina)
    ========================================== */
 body.dark-mode .encabezado,
 body.dark-mode header {
@@ -37,94 +37,88 @@ body.dark-mode footer {
 }
 
 /* ==========================================
-    CORRECCIÓN DE VISTAS Y TÍTULOS FUERA DEL BLOQUE ROJO
+   VISTAS Y TÍTULOS GENERALES (FUERA DE CAJAS ROJAS)
    ========================================== */
 body.dark-mode .vista {
     background-color: transparent !important;
 }
 
-/* Forzar que los títulos y encabezados de sección queden fuera del cuadro rojizo */
 body.dark-mode h2.titulo-seccion,
-body.dark-mode h3,
-body.dark-mode #titulo-login,
+body.dark-mode h3.titulo-panel,
+body.dark-mode #titulo-bienvenida,
 body.dark-mode .vista > h2,
 body.dark-mode .vista > h3 {
     background-color: transparent !important;
     color: var(--accent-primary) !important;
+    box-shadow: none !important;
 }
 
 /* ==========================================
-    FORMULARIO Y CONTENEDORES AISLADOS (ROJIZOS)
+   PANEL Y FORMULARIO (Únicos con fondo rojo/burdeos)
    ========================================== */
-body.dark-mode .formulario,
-body.dark-mode form,
-body.dark-mode .panel,
-body.dark-mode .bloque,
-body.dark-mode .bloque-bienvenida,
-body.dark-mode .tarjeta-lote,
-body.dark-mode .tarjeta-lote-aceptado,
-body.dark-mode .modal-contenido {
+body.dark-mode .panel {
     background-color: var(--bg-card) !important;
-    color: var(--text-main) !important;
     border: 1px solid var(--border-soft) !important;
     border-radius: 12px !important;
-    box-sizing: border-box;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    margin-bottom: 24px; /* Evita que se conecten con secciones inferiores */
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: none !important;
 }
 
-/* Eliminar líneas verticales extrañas en campos e inputs */
-body.dark-mode .grupo-campo,
-body.dark-mode .campo-contenedor {
+body.dark-mode .formulario,
+body.dark-mode form {
+    background-color: transparent !important;
     border: none !important;
-    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
 }
 
 /* ==========================================
-    TABLAS Y CAJAS BLANCAS RESIDUALES
+   BLOQUES INTERNOS: DESLINDE Y ESTADO DE LOTES (AZUL OSCURO)
    ========================================== */
-/* Forzar que cualquier tabla, contenedor de aviso o deslinde adopte el fondo oscuro/rojizo */
+body.dark-mode .bloque,
+body.dark-mode #bloque-estado-lotes,
+body.dark-mode .grupo-deslinde,
+body.dark-mode .lista,
 body.dark-mode table,
-body.dark-mode .tabla-lotes,
-body.dark-mode div[style*="background: #fff"],
-body.dark-mode div[style*="background: white"],
-body.dark-mode div[style*="background-color: #fff"],
-body.dark-mode div[style*="background-color: white"] {
-    background-color: var(--bg-card) !important;
+body.dark-mode .tabla-lotes {
+    background-color: var(--bg-main) !important;
     color: var(--text-main) !important;
-    border-color: var(--border-soft) !important;
+    border: 1px solid var(--border-soft) !important;
+    border-radius: 8px !important;
+    padding: 15px;
+    margin-top: 15px;
+    box-shadow: none !important;
 }
 
-body.dark-mode th,
-body.dark-mode td {
+/* Forzar que los textos dentro de estos bloques sean legibles */
+body.dark-mode #bloque-estado-lotes h3,
+body.dark-mode .titulo-bloque {
+    color: var(--accent-primary) !important;
     background-color: transparent !important;
-    color: var(--text-muted) !important;
-    border-color: var(--border-soft) !important;
 }
 
-body.dark-mode tr:hover td {
-    background-color: rgba(106, 4, 15, 0.3) !important;
+/* ==========================================
+   CAMPOS DE ENTRADA (SIN SOMBRAS NI LÍNEAS VERTICALES RARAS)
+   ========================================== */
+body.dark-mode .grupo-campo {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin-bottom: 15px;
 }
 
-/* Textos generales y etiquetas en modo oscuro */
-body.dark-mode p,
-body.dark-mode span,
-body.dark-mode label,
-body.dark-mode .etiqueta,
-body.dark-mode .texto-descripcion {
-    color: var(--text-muted) !important;
-}
-
-/* Inputs y selects de formularios */
 body.dark-mode input:not([type="submit"]):not([type="button"]):not([type="checkbox"]),
 body.dark-mode select,
 body.dark-mode textarea {
     background-color: var(--bg-main) !important;
     color: var(--text-main) !important;
     border: 1px solid var(--border-input) !important;
+    box-shadow: none !important;
 }
 
-body.dark-mode input::placeholder {
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
     color: var(--text-placeholder) !important;
 }
 
@@ -132,7 +126,36 @@ body.dark-mode input:focus,
 body.dark-mode select:focus,
 body.dark-mode textarea:focus {
     border-color: var(--border-hover) !important;
-    outline: none;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* ==========================================
+   ESTILOS DE TABLAS EN MODO OSCURO
+   ========================================== */
+body.dark-mode th,
+body.dark-mode td {
+    background-color: transparent !important;
+    color: var(--text-muted) !important;
+    border-color: var(--border-soft) !important;
+}
+
+body.dark-mode th {
+    color: var(--accent-primary) !important;
+}
+
+body.dark-mode tr:hover td {
+    background-color: rgba(106, 4, 15, 0.2) !important;
+}
+
+/* Textos generales y etiquetas */
+body.dark-mode p,
+body.dark-mode span,
+body.dark-mode label,
+body.dark-mode .etiqueta,
+body.dark-mode .texto-descripcion,
+body.dark-mode .texto-deslinde {
+    color: var(--text-muted) !important;
 }
 
 body.dark-mode a {
@@ -140,9 +163,8 @@ body.dark-mode a {
 }
 
 /* ==========================================
-    BOTONES ESPECÍFICOS
+   BOTONES ESPECÍFICOS
    ========================================== */
-/* Botón de Iniciar sesión en el header */
 body.dark-mode #btn-nav-login,
 body.dark-mode header #btn-nav-login {
     background-color: var(--bg-main) !important;
@@ -156,30 +178,8 @@ body.dark-mode header #btn-nav-login:hover {
     border-color: var(--accent-primary) !important;
 }
 
-/* Botones secundarios dentro de formularios */
-body.dark-mode .formulario button[type="button"],
-body.dark-mode #btn-login-a-registro {
-    cursor: pointer;
-    font-weight: bold;
-    color: var(--accent-primary) !important;
-    background-color: var(--bg-card) !important;
-    text-decoration: none;
-    border-color: var(--accent-primary) !important;
-    border-radius: 30px !important;
-    border: 2px solid var(--accent-primary) !important;
-    padding: 10px !important;
-    display: inline-block;
-}
-
-body.dark-mode .formulario button[type="button"]:hover,
-body.dark-mode #btn-login-a-registro:hover {
-    background-color: var(--link-color) !important;
-    color: var(--bg-main) !important;
-    border-color: var(--link-color) !important;
-}
-
 /* ==========================================
-    ESTILO DEL SWITCH FLOTANTE
+   ESTILO DEL SWITCH FLOTANTE
    ========================================== */
 .theme-switch-wrapper {
     position: fixed;
