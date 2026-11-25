@@ -1,5 +1,5 @@
 /* ==========================================
-   PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
+    PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
    ========================================== */
 body.dark-mode {
     --bg-main: #03071E;          /* ink-black */
@@ -22,7 +22,7 @@ body.dark-mode {
 }
 
 /* ==========================================
-   ENCABEZADO Y FOOTER
+    ENCABEZADO Y FOOTER
    ========================================== */
 body.dark-mode .encabezado,
 body.dark-mode header {
@@ -86,6 +86,18 @@ body.dark-mode #seccion-registro .formulario {
     padding: 20px !important;
     margin-bottom: 24px !important;
     box-shadow: none !important;
+}
+
+/* FORZAR QUE CUALQUIER CAJA INTERNA O TARJETA BLANCA ADopte EL FONDO OSCURO */
+body.dark-mode .bloque div[style*="background: #fff"],
+body.dark-mode .bloque div[style*="background: white"],
+body.dark-mode .bloque div[style*="background-color: #fff"],
+body.dark-mode .bloque div[style*="background-color: white"],
+body.dark-mode div.datos-perfil > *,
+body.dark-mode #perfil-receptor > * {
+    background-color: var(--bg-main) !important;
+    color: var(--text-main) !important;
+    border-color: var(--border-soft) !important;
 }
 
 /* Tarjetas individuales dentro de las listas */
