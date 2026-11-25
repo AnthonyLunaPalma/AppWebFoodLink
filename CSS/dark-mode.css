@@ -1,5 +1,5 @@
 /* ==========================================
-   PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
+    PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
    ========================================== */
 body.dark-mode {
     --bg-main: #03071E;          /* ink-black */
@@ -22,7 +22,7 @@ body.dark-mode {
 }
 
 /* ==========================================
-   ENCABEZADO Y FOOTER
+    ENCABEZADO Y FOOTER
    ========================================== */
 body.dark-mode .encabezado,
 body.dark-mode header {
