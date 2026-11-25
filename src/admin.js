@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         spanUsuario.style.alignItems = 'center';
     }
 });
+
 document.addEventListener('DOMContentLoaded', async () => {
     const panelAdmin = document.getElementById('pagina-panel');
     if (!panelAdmin || panelAdmin.dataset.rol !== 'Admin') return;
@@ -120,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 1. Cargar solicitudes pendientes (Estado 2)
+    // 1. Cargar solicitudes pendientes con columna de Documento
     async function cargarPendientes() {
         try {
             contenedorPendientes.innerHTML = '<p class="texto-descripcion">Cargando solicitudes...</p>';
@@ -133,16 +134,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const tabla = crearEstructuraTabla(['ID', 'Nombre', 'Cuenta', 'Correo', 'Acciones']);
+            const tabla = crearEstructuraTabla(['ID', 'Nombre', 'Cuenta', 'Correo', 'Documento', 'Acciones']);
             const tbody = tabla.querySelector('tbody');
 
             pendientes.forEach(u => {
                 const fila = document.createElement('tr');
+                
+                // Generar enlace para ver el documento si existe la URL en la base de datos
+                const linkDocumento = u.documento_url 
+                    ? `<a href="${u.documento_url}" target="_blank" style="color: #FAA307; font-weight: bold; text-decoration: underline;">Ver documento</a>` 
+                    : '<span style="color: #868E96;">Sin documento</span>';
+
                 fila.innerHTML = `
                     <td style="padding: 8px;">${u.idusuarios}</td>
                     <td style="padding: 8px;">${u.nombre}</td>
                     <td style="padding: 8px;">${u.cuenta}</td>
                     <td style="padding: 8px;">${u.correo}</td>
+                    <td style="padding: 8px; text-align: center;">${linkDocumento}</td>
                     <td style="padding: 8px; text-align: center;">
                         <button type="button" onclick="ejecutarAprobacion(${u.idusuarios}, this)" style="padding: 6px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">Aceptar</button>
                         <button type="button" onclick="abrirModalRechazar(${u.idusuarios})" style="padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Rechazar</button>
@@ -156,7 +164,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-   const inputBuscarCuenta = document.getElementById('input-buscar-cuenta');
+    const inputBuscarCuenta = document.getElementById('input-buscar-cuenta');
 
     async function cargarUsuariosActivos() {
         try {
