@@ -1,5 +1,5 @@
 /* ==========================================
-    PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
+   PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
    ========================================== */
 body.dark-mode {
     --bg-main: #03071E;          /* ink-black */
@@ -22,7 +22,7 @@ body.dark-mode {
 }
 
 /* ==========================================
-    ENCABEZADO Y FOOTER
+   ENCABEZADO Y FOOTER
    ========================================== */
 body.dark-mode .encabezado,
 body.dark-mode header {
@@ -56,7 +56,7 @@ body.dark-mode .titulo-bloque {
 }
 
 /* ==========================================
-   PANEL GENERAL (TRANSPARENTE PARA EVITAR BLOQUES GIGANTES)
+   PANEL GENERAL (TRANSPARENTE)
    ========================================== */
 body.dark-mode .panel {
     background-color: transparent !important;
@@ -66,14 +66,19 @@ body.dark-mode .panel {
 }
 
 /* ==========================================
-   BLOQUES INDEPENDIENTES (CADA UNO CON SU PROPIA CAJA)
+   BLOQUES, FORMULARIOS, TARJETAS Y PERFILES (FONDO ROJIZO)
    ========================================== */
 body.dark-mode .bloque,
 body.dark-mode .bloque-bienvenida,
+body.dark-mode .formulario,
+body.dark-mode form,
 body.dark-mode .card,
 body.dark-mode .datos-perfil,
+body.dark-mode #perfil-receptor,
 body.dark-mode .modal-contenido,
-body.dark-mode .grupo-deslinde {
+body.dark-mode .grupo-deslinde,
+body.dark-mode #seccion-login .formulario,
+body.dark-mode #seccion-registro .formulario {
     background-color: var(--bg-card) !important;
     color: var(--text-main) !important;
     border: 1px solid var(--border-soft) !important;
@@ -83,7 +88,7 @@ body.dark-mode .grupo-deslinde {
     box-shadow: none !important;
 }
 
-/* Tarjetas individuales dentro de las listas (ej. lotes, rutas) */
+/* Tarjetas individuales dentro de las listas */
 body.dark-mode .lista > * {
     background-color: var(--bg-main) !important;
     color: var(--text-main) !important;
@@ -93,14 +98,6 @@ body.dark-mode .lista > * {
     padding: 15px !important;
     margin-bottom: 12px !important;
     box-shadow: none !important;
-}
-
-/* Excepciones de bloques que van en ink-black para contraste limpio */
-body.dark-mode #bloque-estado-lotes,
-body.dark-mode #bloque-estado-global,
-body.dark-mode #bloque-aceptar-usuarios,
-body.dark-mode #bloque-usuarios {
-    background-color: var(--bg-card) !important;
 }
 
 /* ==========================================
@@ -145,14 +142,6 @@ body.dark-mode .contador-etiqueta {
 /* ==========================================
    CAMPOS DE FORMULARIO E INPUTS (SIN SOMBRAS)
    ========================================== */
-body.dark-mode .formulario,
-body.dark-mode form {
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-}
-
 body.dark-mode .grupo-campo {
     background: transparent !important;
     border: none !important;
