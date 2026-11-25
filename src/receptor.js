@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- CONTENEDORES EN EL HTML ---
     const contenedorDisponibles = document.getElementById('lista-lotes-disponibles');
     const contenedorAceptados = document.getElementById('lista-lotes-receptor');
-    const seccionPerfilAbajo = document.getElementById('seccion-perfil-receptor');
+    const contenedorPerfil = document.getElementById('perfil-receptor'); // Corregido según receptor.html
 
     const TIPOS_NOMBRES = {
         1: "Lácteos y derivados",
@@ -71,28 +71,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .filter(l => Number(l.status_idstatus) === 2 && Number(l.receptor_idusuarios) === Number(idUsuarioActual));
 
             // --- RENDERIZAR PERFIL Y TARJETA DE ESTADÍSTICA ABAJO ---
-            if (seccionPerfilAbajo || document.getElementById('perfil-usuario-abajo')) {
-                let contenedorPerfil = document.getElementById('perfil-usuario-abajo');
-                if (!contenedorPerfil) {
-                    contenedorPerfil = document.createElement('div');
-                    contenedorPerfil.id = 'perfil-usuario-abajo';
-                    if (seccionPerfilAbajo) seccionPerfilAbajo.appendChild(contenedorPerfil);
-                }
-
-                if (contenedorPerfil) {
-                    contenedorPerfil.style.cssText = 'display: flex; flex-direction: column; gap: 12px; margin-top: 20px;';
-                    contenedorPerfil.innerHTML = `
-                        <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 8px;">
-                            <h3 style="margin: 0; color: #5c3a40; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 6px;">Mi Perfil</h3>
-                            <p style="margin: 0; font-size: 0.95rem;"><strong>Nombre:</strong> ${usuarioActivo.nombre}</p>
-                            <p style="margin: 0; font-size: 0.95rem;"><strong>Cuenta:</strong> ${usuarioActivo.cuenta}</p>
-                        </div>
-                        <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.95rem; font-weight: bold; color: #5c3a40;">Total de lotes aceptados:</span>
-                            <span style="background: #5c3a40; color: white; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 1rem;">${lotesAceptados.length}</span>
-                        </div>
-                    `;
-                }
+            if (contenedorPerfil) {
+                contenedorPerfil.style.cssText = 'display: flex; flex-direction: column; gap: 12px;';
+                contenedorPerfil.innerHTML = `
+                    <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 8px;">
+                        <h3 style="margin: 0; color: #5c3a40; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 6px;">Mi Perfil</h3>
+                        <p style="margin: 0; font-size: 0.95rem;"><strong>Nombre:</strong> ${usuarioActivo.nombre}</p>
+                        <p style="margin: 0; font-size: 0.95rem;"><strong>Cuenta:</strong> ${usuarioActivo.cuenta}</p>
+                    </div>
+                    <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.95rem; font-weight: bold; color: #5c3a40;">Total de lotes aceptados:</span>
+                        <span style="background: #5c3a40; color: white; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 1rem;">${lotesAceptados.length}</span>
+                    </div>
+                `;
             }
 
             // --- RENDERIZAR TARJETAS DISPONIBLES ---
