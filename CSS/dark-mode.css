@@ -1,5 +1,5 @@
 /* ==========================================
-   PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
+    PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
    ========================================== */
 body.dark-mode {
     --bg-main: #03071E;          /* ink-black */
@@ -37,20 +37,25 @@ body.dark-mode footer {
 }
 
 /* ==========================================
-   CONTENEDORES, TARJETAS Y FORMULARIOS (ROJIZOS)
+   VISTAS Y FORMULARIOS (ROJIZOS Y AJUSTADOS)
    ========================================== */
+body.dark-mode .vista {
+    background-color: transparent !important;
+}
+
+body.dark-mode .formulario,
+body.dark-mode form,
 body.dark-mode .panel,
 body.dark-mode .bloque,
 body.dark-mode .bloque-bienvenida,
-body.dark-mode .formulario,
-body.dark-mode form,
-body.dark-mode .vista:not(#pagina-index),
 body.dark-mode .tarjeta-lote,
 body.dark-mode .tarjeta-lote-aceptado,
 body.dark-mode .modal-contenido {
     background-color: var(--bg-card) !important;
     color: var(--text-main) !important;
-    border-color: var(--border-soft) !important;
+    border: 1px solid var(--border-soft) !important;
+    border-radius: 12px !important;
+    box-sizing: border-box;
 }
 
 /* Textos generales y etiquetas en modo oscuro */
@@ -70,6 +75,7 @@ body.dark-mode .titulo-logo,
 body.dark-mode .titulo-bloque,
 body.dark-mode .titulo-seccion {
     color: var(--accent-primary) !important;
+    background-color: transparent !important;
 }
 
 /* Inputs de formularios (excluyendo botones) */
@@ -94,7 +100,10 @@ body.dark-mode a {
     color: var(--link-color) !important;
 }
 
-/* Botón específico de Iniciar sesión en el header */
+/* ==========================================
+   BOTONES ESPECÍFICOS
+   ========================================== */
+/* Botón de Iniciar sesión en el header */
 body.dark-mode #btn-nav-login,
 body.dark-mode header #btn-nav-login {
     background-color: var(--bg-main) !important;
@@ -105,6 +114,26 @@ body.dark-mode header #btn-nav-login {
 body.dark-mode #btn-nav-login:hover,
 body.dark-mode header #btn-nav-login:hover {
     background-color: var(--bg-card) !important;
+    border-color: var(--accent-primary) !important;
+}
+
+/* Botón "Regístrate" dentro del formulario (con tono rojizo y bordes redondeados) */
+body.dark-mode .formulario button[type="button"],
+body.dark-mode #btn-login-a-registro {
+    background-color: var(--bg-card) !important;
+    color: var(--accent-primary) !important;
+    border: 1px solid var(--border-soft) !important;
+    border-radius: 20px !important;
+    padding: 4px 14px !important;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-block;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+body.dark-mode .formulario button[type="button"]:hover,
+body.dark-mode #btn-login-a-registro:hover {
+    background-color: var(--border-soft) !important;
     border-color: var(--accent-primary) !important;
 }
 
@@ -176,32 +205,4 @@ input:checked + .slider {
 input:checked + .slider:before {
     transform: translateX(22px);
     background-color: #03071E;
-}
-
-/* 1. Sacar el título del bloque rojizo o asegurarnos de que el contenedor comience después */
-body.dark-mode .vista h2.titulo-seccion,
-body.dark-mode #titulo-login {
-    background-color: transparent !important;
-    color: var(--accent-primary) !important;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-/* 2. Ajustar el botón "Regístrate" dentro del formulario para que tenga fondo rojizo (night-bordeaux) y texto visible */
-body.dark-mode .formulario button[type="button"],
-body.dark-mode #btn-login-a-registro {
-    background-color: var(--bg-card) !important;
-    color: var(--accent-primary) !important;
-    border: 1px solid var(--border-soft) !important;
-    padding: 6px 14px;
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s, border-color 0.3s;
-}
-
-body.dark-mode .formulario button[type="button"]:hover,
-body.dark-mode #btn-login-a-registro:hover {
-    background-color: var(--border-soft) !important;
-    border-color: var(--accent-primary) !important;
 }
