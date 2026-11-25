@@ -146,77 +146,79 @@ async function listarUsuarios(busqueda = "") {
     }
     return [];
 }
+
+// ==========================================
+// GESTIÓN DE REGISTRO (Protegido para evitar errores en otras páginas)
+// ==========================================
 const formRegistro = document.getElementById('form-registro');
-const mensajeRegistro = document.getElementById('mensaje-registro');
-const btnSubmit = formRegistro.querySelector('button[type="submit"]') || formRegistro.querySelector('button');
 
-formRegistro.addEventListener('submit', async (e) => {
-    e.preventDefault(); 
+if (formRegistro) {
+    const mensajeRegistro = document.getElementById('mensaje-registro');
+    const btnSubmit = formRegistro.querySelector('button[type="submit"]') || formRegistro.querySelector('button');
 
-    const rol = document.getElementById('registro-rol').value;
-    const nombre = document.getElementById('registro-nombre').value;
-    const correo = document.getElementById('registro-correo').value;
-    const cuenta = document.getElementById('registro-cuenta').value;
-    const contrasena = document.getElementById('registro-contrasena').value;
-    const confirmar = document.getElementById('registro-confirmar').value;
+    formRegistro.addEventListener('submit', async (e) => {
+        e.preventDefault(); 
 
-    // Validación local del correo usando expresiones regulares
-    const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!regexCorreo.test(correo.trim())) {
-        mensajeRegistro.style.color = 'red';
-        mensajeRegistro.textContent = 'Por favor, ingresa un correo electrónico válido.';
-        return;
-    }
+        const rol = document.getElementById('registro-rol').value;
+        const nombre = document.getElementById('registro-nombre').value;
+        const correo = document.getElementById('registro-correo').value;
+        const cuenta = document.getElementById('registro-cuenta').value;
+        const contrasena = document.getElementById('registro-contrasena').value;
+        const confirmar = document.getElementById('registro-confirmar').value;
 
-    if (contrasena !== confirmar) {
-        mensajeRegistro.style.color = 'red';
-        mensajeRegistro.textContent = 'Las contraseñas no coinciden.';
-        return; 
-    }
+        // Validación local del correo usando expresiones regulares
+        const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!regexCorreo.test(correo.trim())) {
+            if (mensajeRegistro) {
+                mensajeRegistro.style.color = 'red';
+                mensajeRegistro.textContent = 'Por favor, ingresa un correo electrónico válido.';
+            }
+            return;
+        }
 
-    // 1. DESHABILITAR EL BOTÓN PARA EVITAR MÚLTIPLES CLICS
-    if (btnSubmit) {
-        btnSubmit.disabled = true;
-        btnSubmit.style.opacity = '0.6';
-        btnSubmit.style.cursor = 'not-allowed';
-        btnSubmit.textContent = 'Registrando...';
-    }
+        if (contrasena !== confirmar) {
+            if (mensajeRegistro) {
+                mensajeRegistro.style.color = 'red';
+                mensajeRegistro.textContent = 'Las contraseñas no coinciden.';
+            }
+            return; 
+        }
 
-    try {
-        const respuesta = await fetch('https://appwebfoodlink.onrender.com/api/registro', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ rol, nombre, correo, cuenta, contrasena })
-        });
+        // Deshabilitar el botón para evitar múltiples clics
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.style.opacity = '0.6';
+            btnSubmit.style.cursor = 'not-allowed';
+            btnSubmit.textContent = 'Registrando...';
+        }
 
-        const resultado = await respuesta.json();
+        try {
+            // Usamos la función general "peticion" que ya toma la API_URL de Render
+            const resultado = await peticion("/registro", "POST", { rol, nombre, correo, cuenta, contrasena });
 
-        if (respuesta.ok) {
-            mensajeRegistro.style.color = 'green';
-            mensajeRegistro.textContent = resultado.mensaje; 
+            if (mensajeRegistro) {
+                mensajeRegistro.style.color = 'green';
+                mensajeRegistro.textContent = resultado.mensaje || 'Registro exitoso.'; 
+            }
             formRegistro.reset(); 
 
-            // Redirigir al inicio de sesión después de 2 segundos para que el admin lo valide
+            // Redirigir al inicio de sesión después de 2 segundos
             setTimeout(() => {
                 window.location.href = './iniciosesion.html';
             }, 2000);
-        } else {
-            mensajeRegistro.style.color = 'red';
-            mensajeRegistro.textContent = resultado.error || 'No se pudo registrar.';
-            rehabilitarBoton();
+
+        } catch (error) {
+            console.error('Error de registro:', error);
+            if (mensajeRegistro) {
+                mensajeRegistro.style.color = 'red';
+                mensajeRegistro.textContent = error.message || 'No se pudo registrar.';
+            }
+            rehabilitarBoton(btnSubmit);
         }
+    });
+}
 
-    } catch (error) {
-        console.error('Error de conexión:', error);
-        mensajeRegistro.style.color = 'red';
-        mensajeRegistro.textContent = 'Error al conectar con el servidor.';
-        rehabilitarBoton();
-    }
-});
-
-function rehabilitarBoton() {
+function rehabilitarBoton(btnSubmit) {
     if (btnSubmit) {
         btnSubmit.disabled = false;
         btnSubmit.style.opacity = '1';
