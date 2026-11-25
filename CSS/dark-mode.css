@@ -1,0 +1,146 @@
+/* ==========================================
+   PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
+   ========================================== */
+body.dark-mode {
+    --bg-main: #03071E;          /* ink-black */
+    --bg-card: #370617;          /* night-bordeaux */
+    --border-soft: #6A040F;      /* black-cherry */
+    --border-input: #9D0208;     /* oxblood */
+    --border-hover: #DC2F02;     /* red-ochre */
+    --accent-stripe: #E85D04;    /* cayenne-red */
+    --btn-secondary: #F48C06;    /* deep-saffron */
+    --link-color: #FAA307;       /* orange */
+    --accent-primary: #FFBA08;   /* amber-flame */
+    --text-main: #F8F9FA;        /* Texto principal */
+    --text-muted: #CED4DA;       /* Texto secundario */
+    --text-placeholder: #868E96; /* Placeholder */
+    --color-error: #FF6B6B;      /* Error */
+    --color-success: #8CE99A;    /* Éxito */
+
+    background-color: var(--bg-main) !important;
+    color: var(--text-main) !important;
+}
+
+/* Aplicación automática a elementos de las vistas */
+body.dark-mode .encabezado,
+body.dark-mode header,
+body.dark-mode .pie-pagina {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-soft) !important;
+}
+
+body.dark-mode .panel,
+body.dark-mode .bloque,
+body.dark-mode .tarjeta-lote,
+body.dark-mode .tarjeta-lote-aceptado,
+body.dark-mode .modal-contenido {
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    border-color: var(--border-soft) !important;
+}
+
+body.dark-mode p,
+body.dark-mode span,
+body.dark-mode label,
+body.dark-mode .texto-descripcion {
+    color: var(--text-muted) !important;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode .titulo-logo,
+body.dark-mode .titulo-bloque {
+    color: var(--accent-primary) !important;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+    background-color: var(--bg-main) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-input) !important;
+}
+
+body.dark-mode input::placeholder {
+    color: var(--text-placeholder) !important;
+}
+
+body.dark-mode input:focus,
+body.dark-mode select:focus {
+    border-color: var(--border-hover) !important;
+}
+
+body.dark-mode a {
+    color: var(--link-color) !important;
+}
+
+/* ==========================================
+   ESTILO DEL SWITCH FLOTANTE
+   ========================================== */
+.theme-switch-wrapper {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(55, 6, 23, 0.95);
+    padding: 10px 16px;
+    border-radius: 30px;
+    border: 1px solid #6A040F;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    backdrop-filter: blur(5px);
+}
+
+.theme-switch-wrapper label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #FFBA08;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 22px;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #6A040F;
+    transition: .3s;
+    border-radius: 22px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #F8F9FA;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #FFBA08;
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+    background-color: #03071E;
+}
