@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodLink - Receptor</title>
+    <link rel="stylesheet" href="../CSS/receptor.css">
+</head>
+<body id="pagina-panel" data-rol="Donado" data-raiz="../">
+
+    <!-- header-->
+    <header class="encabezado" id="encabezado-panel">
+        <div class="logo" id="logo-panel">
+            <h1 class="titulo-logo">FoodLink</h1>
+        </div>
+        <nav class="menu-nav" id="menu-panel">
+            <span class="texto-usuario" id="texto-usuario"></span>
+            <a href="./iniciosesion.html"><button type="button" class="boton-nav" id="btn-cerrar-sesion">Cerrar sesión</button></a>
+        </nav>
+    </header>
+
+    <!-- main -->
+    <main class="contenido-principal" id="contenido-panel">
+
+        <h2 class="titulo-seccion" id="titulo-bienvenida">Bienvenido de vuelta</h2>
+        <p class="mensaje-general" id="mensaje-panel"></p>
+
+        <section class="panel" id="panel-receptor">
+            <h2 class="titulo-panel">Panel del Receptor</h2>
+
+            <div class="bloque" id="bloque-aceptar-lote">
+                <h3 class="titulo-bloque">Aceptar un lote</h3>
+                <p class="texto-descripcion">Lotes publicados y disponibles:</p>
+                <!-- ID corregido para los lotes disponibles -->
+                <div class="lista" id="lista-lotes-disponibles"></div>
+            </div>
+
+            <div class="bloque" id="bloque-lotes-aceptados">
+                <h3 class="titulo-bloque">Mis lotes aceptados</h3>
+                <p class="texto-descripcion">
+                    Cuando un voluntario tome tu lote verás aquí el código y el PIN de entrega;
+                    compártelos con él al recibir los alimentos.
+                </p>
+                <!-- ID para los lotes aceptados -->
+                <div class="lista" id="lista-lotes-receptor"></div>
+            </div>
+
+            <div class="bloque" id="bloque-perfil-receptor">
+                <h3 class="titulo-bloque">Mi perfil / reputación</h3>
+                <div class="datos-perfil" id="perfil-receptor"></div>
+            </div>
+        </section>
+
+        <!-- Modal de límite de lotes aceptados -->
+        <div id="modal-limite-lotes" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;">
+            <div class="modal-contenido" style="background: #fff; padding: 25px; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                <h3 style="margin-bottom: 10px; color: #a02020;">Límite alcanzado</h3>
+                <p style="margin-bottom: 20px; color: #555;">Solamente puedes solicitar 10 lotes a la vez.</p>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    <button type="button" id="btn-cerrar-modal-limite" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Entendido</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Lote No Disponible / Ya Tomado -->
+        <div id="modal-lote-no-disponible" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;">
+            <div class="modal-contenido" style="background: #fff; padding: 25px; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                <h3 style="margin-bottom: 10px; color: #a02020;">Lote no disponible</h3>
+                <p id="texto-error-lote" style="margin-bottom: 20px; color: #555;">Lo sentimos, este lote ya ha sido aceptado por otro receptor.</p>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    <button type="button" id="btn-recargar-pagina" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Aceptar</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!--footer-->
+    <footer class="pie-pagina" id="pie-panel">
+        <p class="texto-pie">FoodLink &copy; 2026 - Rescate de alimentos</p>
+    </footer>
+
+    <script src="../Controlador/controlador.js"></script>
+    <script src="../src/receptor.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodLink - Voluntario</title>
+    <link rel="stylesheet" href="../CSS/voluntario.css">
+</head>
+<body id="pagina-panel" data-rol="Voluntario" data-raiz="../">
+
+    <!--header-->
+    <header class="encabezado" id="encabezado-panel">
+        <div class="logo" id="logo-panel">
+            <h1 class="titulo-logo">FoodLink</h1>
+        </div>
+        <nav class="menu-nav" id="menu-panel">
+            <span class="texto-usuario" id="texto-usuario"></span>
+            <a href="./iniciosesion.html"><button type="button" class="boton-nav" id="btn-cerrar-sesion">Cerrar sesión</button></a>
+        </nav>
+    </header>
+
+    <!--main -->
+    <main class="contenido-principal" id="contenido-panel">
+
+        <h2 class="titulo-seccion" id="titulo-bienvenida">Bienvenido de vuelta</h2>
+        <p class="mensaje-general" id="mensaje-panel"></p>
+
+        <section class="panel" id="panel-voluntario">
+            <h2 class="titulo-panel">Panel del Voluntario</h2>
+
+            <!-- Bloque Mis Rutas con Tarjetas -->
+            <div class="bloque" id="bloque-mis-rutas">
+                <h3 class="titulo-bloque">Mis rutas</h3>
+                <div class="lista" id="lista-mis-rutas" style="display: flex; flex-direction: column; gap: 12px;"></div>
+            </div>
+
+            <!-- Apartado Mi Perfil (Vacío por el momento) -->
+            <div class="bloque" id="bloque-mi-perfil">
+                <h3 class="titulo-bloque">Mi perfil</h3>
+                <p class="texto-descripcion">Información de perfil próximamente disponible.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- footer -->
+    <footer class="pie-pagina" id="pie-panel">
+        <p class="texto-pie">FoodLink &copy; 2026 - Rescate de alimentos</p>
+    </footer>
+
+    <script src="../Controlador/controlador.js"></script>
+    <script src="../src/voluntario.js"></script>
+</body>
+</html>
