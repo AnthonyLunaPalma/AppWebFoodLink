@@ -12,13 +12,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Obtener lotes aceptados y sus calificaciones actuales para evaluar
+// Obtener lotes aceptados para evaluar (sin alterar la estructura de la BD)
 app.get('/api/receptor/evaluaciones', async (req, res) => {
     try {
         const { receptor_id } = req.query;
         if (!receptor_id) return res.status(400).json({ error: 'Falta receptor_id' });
 
-        // Obtener pedidos aceptados por este receptor junto con el donador
+        // Obtener pedidos aceptados por este receptor
         const { data: pedidos, error: errPedidos } = await supabase
             .from('pedidos')
             .select(`
@@ -27,8 +27,6 @@ app.get('/api/receptor/evaluaciones', async (req, res) => {
                 usuarios_idusuarios,
                 receptor_idusuarios,
                 status_idstatus,
-                calificacion_donador,
-                calificacion_voluntario,
                 donador:usuarios_idusuarios ( idusuarios, nombre, cuenta, reputacion )
             `)
             .eq('status_idstatus', 2)
@@ -36,7 +34,7 @@ app.get('/api/receptor/evaluaciones', async (req, res) => {
 
         if (errPedidos) throw new Error(errPedidos.message);
 
-        // Obtener envíos para estos pedidos para encontrar al voluntario
+        // Obtener envíos para encontrar al voluntario de cada pedido
         const pedidoIds = pedidos.map(p => p.idpedidos);
         let enviosMap = {};
         if (pedidoIds.length > 0) {
@@ -60,9 +58,7 @@ app.get('/api/receptor/evaluaciones', async (req, res) => {
             idpedidos: p.idpedidos,
             descripcion: p.descripcion,
             donador: p.donador,
-            voluntario: enviosMap[p.idpedidos] || null,
-            calificacion_donador: p.calificacion_donador,
-            calificacion_voluntario: p.calificacion_voluntario
+            voluntario: enviosMap[p.idpedidos] || null
         }));
 
         res.json(resultado);
@@ -72,79 +68,38 @@ app.get('/api/receptor/evaluaciones', async (req, res) => {
     }
 });
 
-// Registrar evaluación, actualizar pedido y recalcular promedio en la columna 'reputacion'
+// Registrar evaluación y actualizar únicamente la reputación del usuario
 app.post('/api/evaluar', async (req, res) => {
     try {
-        const { lote_id, evaluado_id, tipo, estrellas } = req.body;
+        const { evaluado_id, estrellas } = req.body;
 
-        if (!lote_id || !evaluado_id || !tipo || !estrellas) {
+        if (!evaluado_id || !estrellas) {
             return res.status(400).json({ error: 'Faltan datos obligatorios para la evaluación.' });
         }
 
-        // 1. Actualizar la columna correspondiente en el pedido para bloquear reevaluaciones en este lote
-        const campoUpdate = tipo === 'donador' ? 'calificacion_donador' : 'calificacion_voluntario';
-        
-        const { data: pedidoActual } = await supabase
-            .from('pedidos')
-            .select(campoUpdate)
-            .eq('idpedidos', lote_id)
+        // Obtener la reputación actual del usuario
+        const { data: usuarioActual, error: errGet } = await supabase
+            .from('usuarios')
+            .select('reputacion')
+            .eq('idusuarios', evaluado_id)
             .single();
 
-        if (pedidoActual && pedidoActual[campoUpdate] !== null) {
-            return res.status(400).json({ error: 'Ya has evaluado a este usuario por este lote.' });
-        }
+        if (errGet) throw new Error(errGet.message);
 
-        const { error: errPedido } = await supabase
-            .from('pedidos')
-            .update({ [campoUpdate]: Number(estrellas) })
-            .eq('idpedidos', lote_id);
+        // Calcular nuevo promedio simple o asignar el valor
+        const reputacionActual = usuarioActual.reputacion ? Number(usuarioActual.reputacion) : 5.0;
+        const nuevaEstrella = Number(estrellas);
+        const nuevoPromedio = Number(((reputacionActual + nuevaEstrella) / 2).toFixed(2));
 
-        if (errPedido) throw new Error(errPedido.message);
-
-        // 2. Buscar todos los pedidos donde este usuario haya sido evaluado como donador
-        const { data: pedidosDonador } = await supabase
-            .from('pedidos')
-            .select('calificacion_donador')
-            .eq('usuarios_idusuarios', evaluado_id)
-            .not('calificacion_donador', 'is', null);
-
-        // Buscar también si participó como voluntario en envíos evaluados
-        const { data: enviosUsuario } = await supabase
-            .from('envio')
-            .select('idpedidos')
-            .eq('usuarios_idusuarios', evaluado_id);
-
-        let calificacionesVoluntario = [];
-        if (enviosUsuario && enviosUsuario.length > 0) {
-            const ids = enviosUsuario.map(e => e.idpedidos);
-            const { data: pedEnvios } = await supabase
-                .from('pedidos')
-                .select('calificacion_voluntario')
-                .in('idpedidos', ids)
-                .not('calificacion_voluntario', 'is', null);
-            
-            if (pedEnvios) calificacionesVoluntario = pedEnvios;
-        }
-
-        // Recopilar todas las notas numéricas
-        let todasLasNotas = [
-            ...(pedidosDonador || []).map(p => Number(p.calificacion_donador)),
-            ...(calificacionesVoluntario || []).map(p => Number(p.calificacion_voluntario))
-        ];
-
-        // Calcular promedio decimal
-        const suma = todasLasNotas.reduce((acc, curr) => acc + curr, 0);
-        const promedio = todasLasNotas.length > 0 ? Number((suma / todasLasNotas.length).toFixed(2)) : Number(estrellas);
-
-        // 3. Actualizar la columna 'reputacion' en la tabla 'usuarios'
-        const { error: errUser } = await supabase
+        // Actualizar la columna 'reputacion' en la tabla 'usuarios'
+        const { error: errUpdate } = await supabase
             .from('usuarios')
-            .update({ reputacion: promedio })
+            .update({ reputacion: nuevoPromedio })
             .eq('idusuarios', evaluado_id);
 
-        if (errUser) throw new Error(errUser.message);
+        if (errUpdate) throw new Error(errUpdate.message);
 
-        res.json({ mensaje: '¡Evaluación guardada con éxito!', promedio });
+        res.json({ mensaje: '¡Evaluación guardada con éxito!', promedio: nuevoPromedio });
     } catch (error) {
         console.error('Error al registrar evaluación:', error);
         res.status(500).json({ error: 'Error en el servidor al registrar la evaluación.' });
@@ -195,8 +150,6 @@ app.get('/api/pedidos', async (req, res) => {
                 tipos_idtipos, 
                 usuarios_idusuarios,
                 receptor_idusuarios,
-                calificacion_donador,
-                calificacion_voluntario,
                 usuarios:usuarios_idusuarios ( cuenta )
             `);
 
@@ -317,9 +270,7 @@ app.post('/api/pedidos/:id/cancelar', async (req, res) => {
             .from('pedidos')
             .update({ 
                 status_idstatus: 1, 
-                receptor_idusuarios: null,
-                calificacion_donador: null,
-                calificacion_voluntario: null
+                receptor_idusuarios: null 
             })
             .eq('idpedidos', id)
             .select();

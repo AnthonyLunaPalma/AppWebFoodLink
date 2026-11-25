@@ -1,10 +1,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // --- CONFIGURACIÓN DE URL (Render con respaldo local) ---
     const API_URL = window.location.hostname === 'localhost' 
         ? 'http://localhost:3000' 
         : 'https://appwebfoodlink.onrender.com';
 
-    // --- GESTIÓN DE SESIÓN ---
     const usuarioActivo = obtenerSesion();
     const spanUsuario = document.getElementById('texto-usuario');
 
@@ -34,11 +32,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const idUsuarioActual = usuarioActivo.idusuarios || usuarioActivo.id;
 
-    // --- CONTENEDORES EN EL HTML ---
     const contenedorDisponibles = document.getElementById('lista-lotes-disponibles');
     const contenedorAceptados = document.getElementById('lista-lotes-receptor');
     const contenedorPerfil = document.getElementById('perfil-receptor');
-    const contenedorEvaluar = document.getElementById('lista-lotes-evaluar'); // NUEVO CONTENEDOR PARA EVALUAR
+    const contenedorEvaluar = document.getElementById('lista-lotes-evaluar');
 
     const TIPOS_NOMBRES = {
         1: "Lácteos y derivados",
@@ -51,7 +48,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         8: "Azúcares y dulces"
     };
 
-    // --- CARGAR DATOS GENERALES Y DE EVALUACIÓN ---
     async function cargarDatosReceptor() {
         try {
             if (contenedorDisponibles) contenedorDisponibles.innerHTML = '<p class="texto-descripcion">Cargando...</p>';
@@ -62,16 +58,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (!Array.isArray(lotes)) lotes = [];
 
-            // 1. Filtrar los disponibles (Estatus 1) y limitar estrictamente a los 15 más recientes
             const lotesDisponibles = lotes
                 .filter(l => Number(l.status_idstatus) === 1)
                 .slice(0, 15);
 
-            // 2. Filtrar los aceptados (Estatus 2) que pertenezcan estrictamente a este receptor en la BD
             const lotesAceptados = lotes
                 .filter(l => Number(l.status_idstatus) === 2 && Number(l.receptor_idusuarios) === Number(idUsuarioActual));
 
-            // --- RENDERIZAR PERFIL ---
             if (contenedorPerfil) {
                 contenedorPerfil.style.cssText = 'display: flex; flex-direction: column; gap: 12px;';
                 contenedorPerfil.innerHTML = `
@@ -87,7 +80,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `;
             }
 
-            // --- RENDERIZAR TARJETAS DISPONIBLES ---
             if (contenedorDisponibles) {
                 contenedorDisponibles.innerHTML = '';
                 if (lotesDisponibles.length === 0) {
@@ -118,7 +110,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // --- RENDERIZAR TARJETAS ACEPTADOS ---
             if (contenedorAceptados) {
                 contenedorAceptados.innerHTML = '';
                 if (lotesAceptados.length === 0) {
@@ -149,7 +140,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // --- CARGAR SECCIÓN DE EVALUACIÓN ---
             await cargarDatosEvaluacion();
 
         } catch (error) {
@@ -157,7 +147,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- CARGAR Y RENDERIZAR EVALUACIONES DE PARTICIPANTES ---
     async function cargarDatosEvaluacion() {
         if (!contenedorEvaluar) return;
         try {
@@ -171,16 +160,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
+            const evaluacionesHechas = JSON.parse(localStorage.getItem(`evals_${idUsuarioActual}`) || '{}');
+
             contenedorEvaluar.style.cssText = 'display: flex; flex-direction: column; gap: 12px;';
             data.forEach(item => {
                 const tarjeta = document.createElement('div');
                 tarjeta.className = 'tarjeta-evaluacion';
                 tarjeta.style.cssText = 'background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 12px;';
 
+                const keyDonador = `lote_${item.idpedidos}_donador_${item.donador?.idusuarios}`;
+                const keyVoluntario = `lote_${item.idpedidos}_voluntario_${item.voluntario?.idusuarios}`;
+
                 let htmlDonador = '';
                 if (item.donador) {
-                    if (item.calificacion_donador !== null) {
-                        htmlDonador = `<p style="margin: 0; font-size: 0.9rem; color: #28a745;">✓ Donador (${item.donador.nombre}) ya evaluado con ${item.calificacion_donador} ⭐</p>`;
+                    if (evaluacionesHechas[keyDonador]) {
+                        htmlDonador = `<p style="margin: 0; font-size: 0.9rem; color: #28a745;">✓ Donador (${item.donador.nombre}) ya evaluado en este lote.</p>`;
                     } else {
                         htmlDonador = `
                             <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -204,8 +198,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 let htmlVoluntario = '';
                 if (item.voluntario) {
-                    if (item.calificacion_voluntario !== null) {
-                        htmlVoluntario = `<p style="margin: 0; font-size: 0.9rem; color: #28a745; margin-top: 8px;">✓ Voluntario (${item.voluntario.nombre}) ya evaluado con ${item.calificacion_voluntario} ⭐</p>`;
+                    if (evaluacionesHechas[keyVoluntario]) {
+                        htmlVoluntario = `<p style="margin: 0; font-size: 0.9rem; color: #28a745; margin-top: 8px;">✓ Voluntario (${item.voluntario.nombre}) ya evaluado en este lote.</p>`;
                     } else {
                         htmlVoluntario = `
                             <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 8px;">
@@ -241,7 +235,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- FUNCIÓN GLOBAL PARA ENVIAR EVALUACIÓN ---
     window.enviarEvaluacion = async function(loteId, evaluadoId, tipo, btn) {
         const select = document.getElementById(`estrellas-${tipo}-${loteId}`);
         const estrellas = select ? select.value : 5;
@@ -254,9 +247,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    lote_id: loteId,
                     evaluado_id: evaluadoId,
-                    tipo: tipo,
                     estrellas: Number(estrellas)
                 })
             });
@@ -264,8 +255,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const resultado = await respuesta.json();
             if (!respuesta.ok) throw new Error(resultado.error || 'Error al guardar');
 
+            const evaluacionesHechas = JSON.parse(localStorage.getItem(`evals_${idUsuarioActual}`) || '{}');
+            evaluacionesHechas[`lote_${loteId}_${tipo}_${evaluadoId}`] = true;
+            localStorage.setItem(`evals_${idUsuarioActual}`, JSON.stringify(evaluacionesHechas));
+
             alert(resultado.mensaje);
-            await cargarDatosReceptor();
+            await cargarDatosEvaluacion();
         } catch (err) {
             alert('Error: ' + err.message);
             btn.disabled = false;
@@ -273,7 +268,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // --- FUNCIÓN GLOBAL PARA ACEPTAR O CANCELAR ---
     window.cambiarEstatusLote = async function(idpedidos, accion, btn) {
         if (btn.disabled) return;
         btn.disabled = true;
