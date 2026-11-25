@@ -156,3 +156,17 @@ input:checked + .slider:before {
     transform: translateX(22px);
     background-color: #03071E;
 }
+
+/* Hacer que el botón de Iniciar sesión en el header tenga el fondo del color de la página */
+body.dark-mode #btn-nav-login,
+body.dark-mode header #btn-nav-login {
+    background-color: var(--bg-main) !important;
+    color: var(--accent-primary) !important;
+    border: 1px solid var(--border-soft) !important;
+}
+
+body.dark-mode #btn-nav-login:hover,
+body.dark-mode header #btn-nav-login:hover {
+    background-color: var(--bg-card) !important;
+    border-color: var(--accent-primary) !important;
+}
