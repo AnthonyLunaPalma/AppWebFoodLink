@@ -1,5 +1,5 @@
-/* ==========================================
-    PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
+//* ==========================================
+   PALETA OSCURA - FoodLink (paleta2oscura.xlsx)
    ========================================== */
 body.dark-mode {
     --bg-main: #03071E;          /* ink-black */
@@ -21,12 +21,8 @@ body.dark-mode {
     color: var(--text-main) !important;
 }
 
-/*
-ola
-*/
-
 /* ==========================================
-    ENCABEZADO Y FOOTER (Transparentes con línea fina)
+   ENCABEZADO Y FOOTER (Transparentes con línea fina)
    ========================================== */
 body.dark-mode .encabezado,
 body.dark-mode header {
@@ -47,89 +43,91 @@ body.dark-mode .vista {
     background-color: transparent !important;
 }
 
-body.dark-mode h2.titulo-seccion,
-body.dark-mode h3.titulo-panel,
-body.dark-mode h2.titulo-panel,
-body.dark-mode #titulo-bienvenida,
-body.dark-mode .vista > h2,
-body.dark-mode .vista > h3 {
-    background-color: transparent !important;
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode .titulo-logo,
+body.dark-mode .titulo-seccion,
+body.dark-mode .titulo-panel,
+body.dark-mode .titulo-bloque {
     color: var(--accent-primary) !important;
-    box-shadow: none !important;
-}
-
-/* ==========================================
-   PANEL GENERAL (TRANSPARENTE)
-   ========================================== */
-body.dark-mode .panel {
     background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
 }
 
 /* ==========================================
-   BLOQUE ANUNCIAR LOTE (ÚNICO CON FONDO ROJIZO)
+   CONTENEDORES, BLOQUES, TARJETAS Y MODALES
    ========================================== */
-body.dark-mode #bloque-publicar-lote {
+body.dark-mode .panel,
+body.dark-mode .bloque,
+body.dark-mode .bloque-bienvenida,
+body.dark-mode .formulario,
+body.dark-mode form,
+body.dark-mode .card,
+body.dark-mode .datos-perfil,
+body.dark-mode .modal-contenido,
+body.dark-mode .lista > *,
+body.dark-mode .grupo-deslinde {
     background-color: var(--bg-card) !important;
-    border: 1px solid var(--border-soft) !important;
-    border-radius: 12px !important;
-    padding: 24px !important;
-    margin-bottom: 30px !important;
-    box-shadow: none !important;
+    color: var(--text-main) !important;
+    border-color: var(--border-soft) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
 }
 
-body.dark-mode #bloque-publicar-lote h3.titulo-bloque {
-    color: var(--accent-primary) !important;
-    background-color: transparent !important;
+/* Excepciones de bloques que van en ink-black para contraste limpio */
+body.dark-mode #bloque-estado-lotes,
+body.dark-mode #bloque-estado-global,
+body.dark-mode #bloque-aceptar-usuarios,
+body.dark-mode #bloque-usuarios {
+    background-color: var(--bg-main) !important;
 }
 
 /* ==========================================
-   BLOQUE ESTADO DE LOTES Y DESLINDE (AZUL OSCURO)
+   TABLAS Y CONTADORES (DASHBOARD)
    ========================================== */
-body.dark-mode #bloque-estado-lotes,
-body.dark-mode .lista,
 body.dark-mode table,
 body.dark-mode .tabla-lotes {
     background-color: var(--bg-main) !important;
     color: var(--text-main) !important;
-    border: 1px solid var(--border-soft) !important;
-    border-radius: 8px !important;
-    padding: 15px !important;
-    margin-top: 15px !important;
-    box-shadow: none !important;
+    border-color: var(--border-soft) !important;
 }
 
-body.dark-mode #bloque-estado-lotes h3.titulo-bloque {
-    color: var(--accent-primary) !important;
+body.dark-mode th,
+body.dark-mode td {
     background-color: transparent !important;
+    color: var(--text-muted) !important;
+    border-color: var(--border-soft) !important;
 }
 
-body.dark-mode .grupo-deslinde {
-    background-color: var(--bg-main) !important;
+body.dark-mode th {
+    color: var(--accent-primary) !important;
+}
+
+body.dark-mode tr:hover td {
+    background-color: rgba(106, 4, 15, 0.3) !important;
+}
+
+body.dark-mode .contador {
+    background-color: var(--bg-card) !important;
     border: 1px solid var(--border-soft) !important;
-    border-radius: 8px !important;
-    padding: 15px !important;
-    margin-top: 15px !important;
+    border-bottom: 4px solid var(--accent-primary) !important;
+}
+
+body.dark-mode .contador-valor {
+    color: var(--accent-primary) !important;
+}
+
+body.dark-mode .contador-etiqueta {
+    color: var(--text-muted) !important;
 }
 
 /* ==========================================
-   CAMPOS DE ENTRADA (LIMPIOS, SIN LÍNEAS NI SOMBRAS)
+   CAMPOS DE FORMULARIO E INPUTS
    ========================================== */
-body.dark-mode .formulario,
-body.dark-mode form {
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-}
-
-body.dark-mode .grupo-campo:not(.grupo-deslinde) {
+body.dark-mode .grupo-campo {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    margin-bottom: 15px !important;
 }
 
 body.dark-mode input:not([type="submit"]):not([type="button"]):not([type="checkbox"]),
@@ -154,31 +152,21 @@ body.dark-mode textarea:focus {
     box-shadow: none !important;
 }
 
+body.dark-mode select.campo option {
+    background-color: var(--bg-main) !important;
+    color: var(--text-main) !important;
+}
+
 /* ==========================================
-   ESTILOS DE TABLAS EN MODO OSCURO
+   TEXTOS Y ENLACES GENERALES
    ========================================== */
-body.dark-mode th,
-body.dark-mode td {
-    background-color: transparent !important;
-    color: var(--text-muted) !important;
-    border-color: var(--border-soft) !important;
-}
-
-body.dark-mode th {
-    color: var(--accent-primary) !important;
-}
-
-body.dark-mode tr:hover td {
-    background-color: rgba(106, 4, 15, 0.2) !important;
-}
-
-/* Textos generales y etiquetas */
 body.dark-mode p,
-body.dark-mode span,
+body.dark-mode span:not(.contador-valor):not(#texto-usuario),
 body.dark-mode label,
 body.dark-mode .etiqueta,
 body.dark-mode .texto-descripcion,
-body.dark-mode .texto-deslinde {
+body.dark-mode .texto-deslinde,
+body.dark-mode .texto-pie {
     color: var(--text-muted) !important;
 }
 
@@ -187,7 +175,7 @@ body.dark-mode a {
 }
 
 /* ==========================================
-   BOTONES ESPECÍFICOS
+   BOTONES
    ========================================== */
 body.dark-mode #btn-nav-login,
 body.dark-mode header #btn-nav-login {
@@ -202,8 +190,31 @@ body.dark-mode header #btn-nav-login:hover {
     border-color: var(--accent-primary) !important;
 }
 
+body.dark-mode .formulario button[type="button"],
+body.dark-mode #btn-login-a-registro,
+body.dark-mode #btn-registro-a-login {
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--accent-primary) !important;
+    background-color: var(--bg-card) !important;
+    text-decoration: none;
+    border-color: var(--accent-primary) !important;
+    border-radius: 30px !important;
+    border: 2px solid var(--accent-primary) !important;
+    padding: 10px !important;
+    display: inline-block;
+}
+
+body.dark-mode .formulario button[type="button"]:hover,
+body.dark-mode #btn-login-a-registro:hover,
+body.dark-mode #btn-registro-a-login:hover {
+    background-color: var(--link-color) !important;
+    color: var(--bg-main) !important;
+    border-color: var(--link-color) !important;
+}
+
 /* ==========================================
-   ESTILO DEL SWITCH FLOTANTE
+   SWITCH FLOTANTE DE TEMA
    ========================================== */
 .theme-switch-wrapper {
     position: fixed;
