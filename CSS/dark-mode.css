@@ -177,3 +177,31 @@ input:checked + .slider:before {
     transform: translateX(22px);
     background-color: #03071E;
 }
+
+/* 1. Sacar el título del bloque rojizo o asegurarnos de que el contenedor comience después */
+body.dark-mode .vista h2.titulo-seccion,
+body.dark-mode #titulo-login {
+    background-color: transparent !important;
+    color: var(--accent-primary) !important;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* 2. Ajustar el botón "Regístrate" dentro del formulario para que tenga fondo rojizo (night-bordeaux) y texto visible */
+body.dark-mode .formulario button[type="button"],
+body.dark-mode #btn-login-a-registro {
+    background-color: var(--bg-card) !important;
+    color: var(--accent-primary) !important;
+    border: 1px solid var(--border-soft) !important;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+body.dark-mode .formulario button[type="button"]:hover,
+body.dark-mode #btn-login-a-registro:hover {
+    background-color: var(--border-soft) !important;
+    border-color: var(--accent-primary) !important;
+}
