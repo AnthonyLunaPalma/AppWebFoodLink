@@ -25,8 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             if (contenedorMisRutas) contenedorMisRutas.innerHTML = '<p class="texto-descripcion">Cargando tus rutas...</p>';
 
-            const respuesta = await fetch(`http://localhost:3000/api/envios?usuarios_idusuarios=${idUsuarioActual}`);
-            let misEnvios = [];
+            const respuesta = await fetch(`https://appwebfoodlink.onrender.com/api/envios?usuarios_idusuarios=${idUsuarioActual}`);
             
             try {
                 misEnvios = await respuesta.json();

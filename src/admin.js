@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             contenedorLotesAdmin.innerHTML = '<p class="texto-descripcion">Cargando lotes...</p>';
             
             const fechaSeleccionada = inputBuscarFecha ? inputBuscarFecha.value : '';
-            let url = 'http://localhost:3000/api/pedidos';
+            let url = 'https://appwebfoodlink.onrender.com/api/pedidos';
             if (fechaSeleccionada) {
                 url += `?fecha=${encodeURIComponent(fechaSeleccionada)}`;
             }
@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnGenerarReporte) {
         btnGenerarReporte.addEventListener('click', async () => {
             try {
-                const respuesta = await fetch('http://localhost:3000/api/pedidos');
+                const respuesta = await fetch('https://appwebfoodlink.onrender.com/api/pedidos');
                 const lotes = await respuesta.json();
 
                 if (!lotes || lotes.length === 0) {

@@ -35,14 +35,13 @@ formRegistro.addEventListener('submit', async (e) => {
     }
 
     try {
-        const respuesta = await fetch('http://localhost:3000/api/registro', {
+        const respuesta = await fetch('https://appwebfoodlink.onrender.com/api/registro', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ rol, nombre, correo, cuenta, contrasena })
         });
-
         const resultado = await respuesta.json();
 
         if (respuesta.ok) {

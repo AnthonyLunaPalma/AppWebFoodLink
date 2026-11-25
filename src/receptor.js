@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (contenedorDisponibles) contenedorDisponibles.innerHTML = '<p class="texto-descripcion">Cargando...</p>';
             if (contenedorAceptados) contenedorAceptados.innerHTML = '<p class="texto-descripcion">Cargando...</p>';
 
-            const respuesta = await fetch('http://localhost:3000/api/pedidos');
+            const respuesta = await fetch('https://appwebfoodlink.onrender.com/api/pedidos');
             let lotes = await respuesta.json();
 
             if (!Array.isArray(lotes)) lotes = [];
@@ -141,8 +141,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             const endpoint = accion === 'aceptar' 
-                ? `http://localhost:3000/api/pedidos/${idpedidos}/aceptar`
-                : `http://localhost:3000/api/pedidos/${idpedidos}/cancelar`;
+            ? `https://appwebfoodlink.onrender.com/api/pedidos/${idpedidos}/aceptar`
+            : `https://appwebfoodlink.onrender.com/api/pedidos/${idpedidos}/cancelar`;
 
             const opcionesFetch = {
                 method: 'POST',
