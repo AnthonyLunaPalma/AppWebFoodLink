@@ -21,7 +21,7 @@ body.dark-mode {
     color: var(--text-main) !important;
 }
 
-/* Aplicación automática a elementos de las vistas */
+/* Encabezados y pies de página */
 body.dark-mode .encabezado,
 body.dark-mode header,
 body.dark-mode .pie-pagina {
@@ -29,8 +29,10 @@ body.dark-mode .pie-pagina {
     border-color: var(--border-soft) !important;
 }
 
+/* Paneles, bloques y tarjetas generales */
 body.dark-mode .panel,
 body.dark-mode .bloque,
+body.dark-mode .bloque-bienvenida,
 body.dark-mode .tarjeta-lote,
 body.dark-mode .tarjeta-lote-aceptado,
 body.dark-mode .modal-contenido {
@@ -39,6 +41,7 @@ body.dark-mode .modal-contenido {
     border-color: var(--border-soft) !important;
 }
 
+/* Textos generales */
 body.dark-mode p,
 body.dark-mode span,
 body.dark-mode label,
@@ -46,6 +49,7 @@ body.dark-mode .texto-descripcion {
     color: var(--text-muted) !important;
 }
 
+/* Títulos */
 body.dark-mode h1,
 body.dark-mode h2,
 body.dark-mode h3,
@@ -54,7 +58,8 @@ body.dark-mode .titulo-bloque {
     color: var(--accent-primary) !important;
 }
 
-body.dark-mode input,
+/* Inputs de formularios (excluyendo botones para que no tengan bordes raros) */
+body.dark-mode input:not([type="submit"]):not([type="button"]):not([type="checkbox"]),
 body.dark-mode select,
 body.dark-mode textarea {
     background-color: var(--bg-main) !important;
