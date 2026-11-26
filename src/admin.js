@@ -1,10 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Obtenemos los datos del usuario logueado en esta pestaña específica
     const usuarioActivo = obtenerSesion();
     const spanUsuario = document.getElementById('texto-usuario');
 
     if (usuarioActivo && spanUsuario) {
-        // Mostramos su nombre y cuenta en el encabezado
         spanUsuario.textContent = `👤 ${usuarioActivo.nombre} (${usuarioActivo.cuenta})`;
         spanUsuario.style.fontWeight = 'bold';
         spanUsuario.style.color = '#5c3a40';
@@ -21,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const contenedorPendientes = document.getElementById('lista-usuarios-pendientes');
     const contenedorUsuarios = document.getElementById('lista-usuarios');
     const contenedorLotesAdmin = document.getElementById('lista-lotes-admin');
+    const contenedorLotesReportados = document.getElementById('lista-lotes-reportados');
     const filtroRol = document.getElementById('filtro-rol');
 
     const STATUS_BD = {
@@ -50,6 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await cargarPendientes();
         await cargarUsuariosActivos();
         await cargarLotesAdmin();
+        await cargarLotesReportados();
     }
 
     const inputBuscarFecha = document.getElementById('input-buscar-fecha');
@@ -68,10 +68,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const respuesta = await fetch(url);
             const lotes = await respuesta.json();
 
-            // El dashboard calcula con todos los datos obtenidos
             actualizarDashboard(lotes);
 
-            // Si NO hay fecha seleccionada, limitamos la tabla a los últimos 15 lotes
             const lotesMostrados = fechaSeleccionada 
                 ? lotes 
                 : (Array.isArray(lotes) ? lotes.slice(0, 15) : []);
@@ -83,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const tabla = crearEstructuraTabla(['ID', 'Tipo', 'Descripción', 'Peso', 'Evaluador', 'Cuenta', 'Dirección Salida', 'Caducidad', 'Estatus']);
+            const tabla = crearEstructuraTabla(['ID', 'Tipo', 'Descripción', 'Peso', 'Evaluador', 'Cuenta', 'Dirección Salida', 'Caducidad', 'Estatus', 'Acciones']);
             const tbody = tabla.querySelector('tbody');
 
             lotesMostrados.forEach(l => {
@@ -103,6 +101,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <td style="padding: 8px; border-bottom: 1px solid #eee;">${l.direccion_salida}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #eee;">${fechaCaducidad}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold; color: #9d0208;">${nombreEstatus}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">
+                        <button type="button" onclick="eliminarLoteAdmin(${l.idpedidos})" style="padding: 4px 8px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Eliminar</button>
+                    </td>
                 `;
                 tbody.appendChild(fila);
             });
@@ -113,7 +114,86 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Escuchar cuando el usuario elija o borre una fecha en el calendario
+    async function cargarLotesReportados() {
+        if (!contenedorLotesReportados) return;
+        try {
+            contenedorLotesReportados.innerHTML = '<p class="texto-descripcion">Cargando lotes reportados...</p>';
+            const respuesta = await fetch('https://appwebfoodlink.onrender.com/api/reportes-lotes');
+            const reportes = await respuesta.json();
+
+            contenedorLotesReportados.innerHTML = '';
+            if (!Array.isArray(reportes) || reportes.length === 0) {
+                contenedorLotesReportados.innerHTML = '<p class="texto-descripcion">No hay lotes reportados actualmente.</p>';
+                return;
+            }
+
+            const tabla = crearEstructuraTabla(['ID Reporte', 'ID Lote', 'Descripción Lote', 'Reportado por', 'Motivo', 'Acciones']);
+            const tbody = tabla.querySelector('tbody');
+
+            reportes.forEach(r => {
+                const fila = document.createElement('tr');
+                const descLote = r.pedidos ? r.pedidos.descripcion : 'Lote no disponible';
+                const nombreUsuario = r.usuarios ? `${r.usuarios.nombre} (${r.usuarios.cuenta})` : 'Desconocido';
+
+                fila.innerHTML = `
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.idreporte}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${r.pedidos_idpedidos}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${descLote}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${nombreUsuario}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; color: #a02020; font-weight: bold;">${r.motivo}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">
+                        <button type="button" onclick="eliminarLoteDesdeReporte(${r.pedidos_idpedidos}, ${r.idreporte})" style="padding: 4px 8px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">Eliminar Lote</button>
+                        <button type="button" onclick="descartarReporte(${r.idreporte})" style="padding: 4px 8px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Eliminar Reporte</button>
+                    </td>
+                `;
+                tbody.appendChild(fila);
+            });
+
+            contenedorLotesReportados.appendChild(tabla);
+        } catch (error) {
+            contenedorLotesReportados.innerHTML = `<p style="color: red;">Error al cargar reportes: ${error.message}</p>`;
+        }
+    }
+
+    window.eliminarLoteAdmin = async function(idPedido) {
+        if (!confirm(`¿Estás seguro de eliminar el lote #${idPedido}?`)) return;
+        try {
+            const resp = await fetch(`https://appwebfoodlink.onrender.com/api/pedidos/${idPedido}`, { method: 'DELETE' });
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok) throw new Error(data.error || 'Error al eliminar lote');
+            alert('¡Lote eliminado con éxito!');
+            await cargarLotesAdmin();
+            await cargarLotesReportados();
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    };
+
+    window.eliminarLoteDesdeReporte = async function(idPedido, idReporte) {
+        if (!confirm(`¿Estás seguro de eliminar permanentemente el lote #${idPedido}?`)) return;
+        try {
+            await fetch(`https://appwebfoodlink.onrender.com/api/pedidos/${idPedido}`, { method: 'DELETE' });
+            await fetch(`https://appwebfoodlink.onrender.com/api/reportes-lotes/${idReporte}`, { method: 'DELETE' });
+            alert('Lote eliminado y reporte cerrado.');
+            await cargarLotesAdmin();
+            await cargarLotesReportados();
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    };
+
+    window.descartarReporte = async function(idReporte) {
+        if (!confirm(`¿Deseas eliminar este reporte sin borrar el lote?`)) return;
+        try {
+            const resp = await fetch(`https://appwebfoodlink.onrender.com/api/reportes-lotes/${idReporte}`, { method: 'DELETE' });
+            if (!resp.ok) throw new Error('No se pudo eliminar el reporte');
+            alert('Reporte eliminado.');
+            await cargarLotesReportados();
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    };
+
     if (inputBuscarFecha) {
         inputBuscarFecha.addEventListener('change', cargarLotesAdmin);
         inputBuscarFecha.addEventListener('input', () => {
@@ -121,7 +201,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 1. Cargar solicitudes pendientes con columna de Documento
     async function cargarPendientes() {
         try {
             contenedorPendientes.innerHTML = '<p class="texto-descripcion">Cargando solicitudes...</p>';
@@ -139,8 +218,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             pendientes.forEach(u => {
                 const fila = document.createElement('tr');
-                
-                // Generar enlace para ver el documento si existe la URL en la base de datos
                 const linkDocumento = u.documento_url 
                     ? `<a href="${u.documento_url}" target="_blank" style="color: #FAA307; font-weight: bold; text-decoration: underline;">Ver documento</a>` 
                     : '<span style="color: #868E96;">Sin documento</span>';
@@ -219,7 +296,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return tabla;
     }
 
-    // Aprobación de usuario pendiente con protección contra múltiples clics
     window.ejecutarAprobacion = async function(id, btn) {
         if (btn.disabled) return;
         btn.disabled = true;
@@ -241,7 +317,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // --- LÓGICA DEL MODAL DE ELIMINAR ---
     const modalEliminar = document.getElementById('modal-eliminar');
     const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
     const btnConfirmarEliminar = document.getElementById('btn-confirmar-eliminar');
@@ -284,7 +359,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- LÓGICA DEL MODAL DE RECHAZAR ---
     const modalRechazar = document.getElementById('modal-rechazar');
     const btnCancelarRechazar = document.getElementById('btn-cancelar-rechazar');
     const btnConfirmarRechazar = document.getElementById('btn-confirmar-rechazar');
@@ -330,7 +404,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         filtroRol.addEventListener('change', cargarUsuariosActivos);
     }
 
-    // Función para actualizar los contadores del Dashboard basándose en los lotes
     function actualizarDashboard(lotes) {
         const spanKg = document.getElementById('valor-kg');
         const spanRaciones = document.getElementById('valor-raciones');
@@ -356,7 +429,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (spanEvitados) spanEvitados.innerHTML = `<b>${totalLotes}</b>`;
     }
 
-    // --- LÓGICA PARA DESCARGAR EL REPORTE CSV ---
     const btnGenerarReporte = document.getElementById('btn-generar-reporte');
 
     if (btnGenerarReporte) {

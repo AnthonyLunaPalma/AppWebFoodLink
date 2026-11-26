@@ -5,7 +5,8 @@ const upload = multer();
 
 const supabase = require('./DB/DB_supabaseClient');
 const { crear, buscarPorCuentaConHash, listar, listarPendientes, aprobar, rechazar, eliminar } = require('./Modelo/usuarios');
-const { crearLote } = require('./Modelo/pedidos');
+const { crearLote, eliminarLote } = require('./Modelo/pedidos');
+const { crearReporte, listarReportes, eliminarReporte } = require('./Modelo/reportes_lotes');
 const { validarCorreo } = require('./src/validaciones');
 
 const app = express();
@@ -18,7 +19,6 @@ app.get('/api/receptor/evaluaciones', async (req, res) => {
         const { receptor_id } = req.query;
         if (!receptor_id) return res.status(400).json({ error: 'Falta receptor_id' });
 
-        // Obtener pedidos aceptados por este receptor
         const { data: pedidos, error: errPedidos } = await supabase
             .from('pedidos')
             .select(`
@@ -34,7 +34,6 @@ app.get('/api/receptor/evaluaciones', async (req, res) => {
 
         if (errPedidos) throw new Error(errPedidos.message);
 
-        // Obtener envíos para encontrar al voluntario de cada pedido
         const pedidoIds = pedidos.map(p => p.idpedidos);
         let enviosMap = {};
         if (pedidoIds.length > 0) {
@@ -77,7 +76,6 @@ app.post('/api/evaluar', async (req, res) => {
             return res.status(400).json({ error: 'Faltan datos obligatorios para la evaluación.' });
         }
 
-        // Obtener la reputación actual del usuario
         const { data: usuarioActual, error: errGet } = await supabase
             .from('usuarios')
             .select('reputacion')
@@ -86,12 +84,10 @@ app.post('/api/evaluar', async (req, res) => {
 
         if (errGet) throw new Error(errGet.message);
 
-        // Calcular nuevo promedio simple o asignar el valor
         const reputacionActual = usuarioActual.reputacion ? Number(usuarioActual.reputacion) : 5.0;
         const nuevaEstrella = Number(estrellas);
         const nuevoPromedio = Number(((reputacionActual + nuevaEstrella) / 2).toFixed(2));
 
-        // Actualizar la columna 'reputacion' en la tabla 'usuarios'
         const { error: errUpdate } = await supabase
             .from('usuarios')
             .update({ reputacion: nuevoPromedio })
@@ -126,6 +122,46 @@ app.get('/api/envios', async (req, res) => {
     } catch (error) {
         console.error('Error al obtener los envíos:', error);
         res.status(500).json({ error: 'Error al obtener los envíos del voluntario.' });
+    }
+});
+
+// ==========================================
+// RUTAS DE REPORTES DE LOTES
+// ==========================================
+
+app.post('/api/reportes-lotes', async (req, res) => {
+    try {
+        const { pedidos_idpedidos, usuarios_idusuarios, motivo } = req.body;
+        if (!pedidos_idpedidos || !usuarios_idusuarios || !motivo) {
+            return res.status(400).json({ error: 'Faltan datos obligatorios para el reporte.' });
+        }
+        const nuevoReporte = await crearReporte({ pedidos_idpedidos, usuarios_idusuarios, motivo });
+        res.status(201).json({ mensaje: '¡Lote reportado con éxito!', reporte: nuevoReporte });
+    } catch (error) {
+        console.error('Error al registrar reporte:', error);
+        res.status(500).json({ error: 'Error en el servidor al registrar el reporte.' });
+    }
+});
+
+app.get('/api/reportes-lotes', async (req, res) => {
+    try {
+        const reportes = await listarReportes();
+        res.json(reportes);
+    } catch (error) {
+        console.error('Error al obtener reportes:', error);
+        res.status(500).json({ error: 'Error al obtener los reportes de lotes.' });
+    }
+});
+
+app.delete('/api/reportes-lotes/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const exito = await eliminarReporte(id);
+        if (!exito) return res.status(404).json({ error: 'Reporte no encontrado.' });
+        res.json({ mensaje: '¡Reporte descartado con éxito!' });
+    } catch (error) {
+        console.error('Error al eliminar reporte:', error);
+        res.status(500).json({ error: 'Error al eliminar el reporte.' });
     }
 });
 
@@ -223,6 +259,20 @@ app.post('/api/pedidos', upload.single('foto'), async (req, res) => {
     } catch (error) {
         console.error('Error al guardar el lote:', error);
         res.status(500).json({ error: 'Error en el servidor al registrar el lote.' });
+    }
+});
+
+app.delete('/api/pedidos/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const exito = await eliminarLote(id);
+        if (!exito) {
+            return res.status(404).json({ error: 'Lote no encontrado.' });
+        }
+        res.json({ mensaje: '¡Lote eliminado con éxito!' });
+    } catch (error) {
+        console.error('Error al eliminar lote:', error);
+        res.status(500).json({ error: 'Error al eliminar el lote.' });
     }
 });
 

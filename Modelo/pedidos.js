@@ -23,4 +23,18 @@ async function crearLote({ descripcion, caducidad, evaluador, tipos_idtipos, pes
     return data;
 }
 
-module.exports = { crearLote };     
+async function eliminarLote(idpedidos) {
+    const { data, error } = await supabase
+        .from('pedidos')
+        .delete()
+        .eq('idpedidos', idpedidos)
+        .select();
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return data && data.length > 0;
+}
+
+module.exports = { crearLote, eliminarLote };  

@@ -101,7 +101,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <p style="margin: 0; font-size: 0.95rem;"><strong>Cuenta (Donador):</strong> ${l.cuenta_usuario || 'Desconocida'}</p>
                             <p style="margin: 0; font-size: 0.95rem;"><strong>Dirección Salida:</strong> ${l.direccion_salida}</p>
                             <p style="margin: 0; font-size: 0.85rem; color: #888;">Caducidad: ${l.caducidad ? new Date(l.caducidad).toLocaleString() : 'N/A'}</p>
-                            <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+                            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+                                <button type="button" onclick="reportarLote(${l.idpedidos}, this)" style="padding: 8px 12px; background: #d9534f; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🚩 Reportar</button>
                                 <button type="button" onclick="cambiarEstatusLote(${l.idpedidos}, 'aceptar', this)" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Aceptar</button>
                             </div>
                         `;
@@ -146,6 +147,35 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error('Error al cargar datos:', error);
         }
     }
+
+    window.reportarLote = async function(idPedido, btn) {
+        const motivo = prompt("¿Por qué motivo reportas este lote? (ej. Contenido falso, broma, etc.):");
+        if (!motivo || motivo.trim() === "") return;
+
+        btn.disabled = true;
+        const textoOriginal = btn.textContent;
+        btn.textContent = 'Reportando...';
+
+        try {
+            const respuesta = await fetch(`${API_URL}/api/reportes-lotes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    pedidos_idpedidos: idPedido,
+                    usuarios_idusuarios: idUsuarioActual,
+                    motivo: motivo.trim()
+                })
+            });
+            const resultado = await respuesta.json();
+            if (!respuesta.ok) throw new Error(resultado.error || 'Error al reportar');
+            alert(resultado.mensaje);
+        } catch (err) {
+            alert('Error: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = textoOriginal;
+        }
+    };
 
     async function cargarDatosEvaluacion() {
         if (!contenedorEvaluar) return;
