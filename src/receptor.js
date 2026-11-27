@@ -17,6 +17,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnEnviarReporte = document.getElementById('btn-enviar-reporte');
     let pedidoIdParaReportar = null;
 
+    // Elemento del modal genérico de aviso/éxito si existe, o lo creamos dinámicamente
+    function mostrarModalAviso(titulo, mensaje, esExito = true) {
+        let modalAviso = document.getElementById('modal-aviso-personalizado');
+        if (!modalAviso) {
+            modalAviso = document.createElement('div');
+            modalAviso.id = 'modal-aviso-personalizado';
+            modalAviso.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 2000;';
+            modalAviso.innerHTML = `
+                <div style="background: #fff; padding: 25px; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                    <h3 id="aviso-titulo" style="margin-bottom: 10px; color: ${esExito ? '#28a745' : '#a02020'};"></h3>
+                    <p id="aviso-mensaje" style="margin-bottom: 20px; color: #555; font-size: 0.95rem;"></p>
+                    <button type="button" id="btn-cerrar-aviso" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Aceptar</button>
+                </div>
+            `;
+            document.body.appendChild(modalAviso);
+
+            document.getElementById('btn-cerrar-aviso').onclick = () => {
+                modalAviso.style.display = 'none';
+            };
+        }
+        document.getElementById('aviso-titulo').textContent = titulo;
+        document.getElementById('aviso-titulo').style.color = esExito ? '#28a745' : '#a02020';
+        document.getElementById('aviso-mensaje').textContent = mensaje;
+        modalAviso.style.display = 'flex';
+    }
+
     if (btnRecargarPagina) {
         btnRecargarPagina.addEventListener('click', () => {
             window.location.reload();
@@ -158,7 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnEnviarReporte.addEventListener('click', async () => {
             const motivo = inputMotivoReporte ? inputMotivoReporte.value.trim() : '';
             if (!motivo) {
-                alert('Por favor, escribe un motivo para el reporte.');
+                mostrarModalAviso("Atención", "Por favor, escribe un motivo para el reporte.", false);
                 return;
             }
 
@@ -179,9 +205,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!respuesta.ok) throw new Error(resultado.error || 'Error al reportar');
                 
                 if (modalReportar) modalReportar.style.display = 'none';
-                alert(resultado.mensaje);
+                
+                // Usamos el modal visual en lugar de alert
+                mostrarModalAviso("¡Éxito!", resultado.mensaje || "Lote reportado con éxito.", true);
             } catch (err) {
-                alert('Error: ' + err.message);
+                mostrarModalAviso("Error", err.message, false);
             } finally {
                 btnEnviarReporte.disabled = false;
                 btnEnviarReporte.textContent = 'Enviar Reporte';
@@ -217,7 +245,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (modalNoDisponible) {
                 modalNoDisponible.style.display = 'flex';
             } else {
-                alert('Error: ' + err.message);
+                mostrarModalAviso("Error", err.message, false);
             }
 
             btn.disabled = false;
