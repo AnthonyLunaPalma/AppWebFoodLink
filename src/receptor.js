@@ -10,6 +10,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const textoErrorLote = document.getElementById('texto-error-lote');
     const btnRecargarPagina = document.getElementById('btn-recargar-pagina');
 
+    // Elementos del modal de reporte personalizado
+    const modalReportar = document.getElementById('modal-reportar');
+    const inputMotivoReporte = document.getElementById('input-motivo-reporte');
+    const btnCancelarReporte = document.getElementById('btn-cancelar-reporte');
+    const btnEnviarReporte = document.getElementById('btn-enviar-reporte');
+    let pedidoIdParaReportar = null;
+
     if (btnRecargarPagina) {
         btnRecargarPagina.addEventListener('click', () => {
             window.location.reload();
@@ -65,21 +72,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const lotesAceptados = lotes
                 .filter(l => Number(l.status_idstatus) === 2 && Number(l.receptor_idusuarios) === Number(idUsuarioActual));
 
-            if (contenedorPerfil) {
-                contenedorPerfil.style.cssText = 'display: flex; flex-direction: column; gap: 12px;';
-                contenedorPerfil.innerHTML = `
-                    <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 8px;">
-                        <h3 style="margin: 0; color: #5c3a40; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 6px;">Mi Perfil</h3>
-                        <p style="margin: 0; font-size: 0.95rem;"><strong>Nombre:</strong> ${usuarioActivo.nombre}</p>
-                        <p style="margin: 0; font-size: 0.95rem;"><strong>Cuenta:</strong> ${usuarioActivo.cuenta}</p>
-                    </div>
-                    <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.95rem; font-weight: bold; color: #5c3a40;">Total de lotes aceptados:</span>
-                        <span style="background: #5c3a40; color: white; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 1rem;">${lotesAceptados.length}</span>
-                    </div>
-                `;
-            }
-
             if (contenedorDisponibles) {
                 contenedorDisponibles.innerHTML = '';
                 if (lotesDisponibles.length === 0) {
@@ -102,7 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <p style="margin: 0; font-size: 0.95rem;"><strong>Dirección Salida:</strong> ${l.direccion_salida}</p>
                             <p style="margin: 0; font-size: 0.85rem; color: #888;">Caducidad: ${l.caducidad ? new Date(l.caducidad).toLocaleString() : 'N/A'}</p>
                             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
-                                <button type="button" onclick="reportarLote(${l.idpedidos}, this)" style="padding: 8px 12px; background: #d9534f; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🚩 Reportar</button>
+                                <button type="button" onclick="abrirModalReportar(${l.idpedidos})" style="padding: 8px 12px; background: #d9534f; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🚩 Reportar</button>
                                 <button type="button" onclick="cambiarEstatusLote(${l.idpedidos}, 'aceptar', this)" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Aceptar</button>
                             </div>
                         `;
@@ -148,155 +140,54 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    window.reportarLote = async function(idPedido, btn) {
-        const motivo = prompt("¿Por qué motivo reportas este lote? (ej. Contenido falso, broma, etc.):");
-        if (!motivo || motivo.trim() === "") return;
-
-        btn.disabled = true;
-        const textoOriginal = btn.textContent;
-        btn.textContent = 'Reportando...';
-
-        try {
-            const respuesta = await fetch(`${API_URL}/api/reportes-lotes`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    pedidos_idpedidos: idPedido,
-                    usuarios_idusuarios: idUsuarioActual,
-                    motivo: motivo.trim()
-                })
-            });
-            const resultado = await respuesta.json();
-            if (!respuesta.ok) throw new Error(resultado.error || 'Error al reportar');
-            alert(resultado.mensaje);
-        } catch (err) {
-            alert('Error: ' + err.message);
-        } finally {
-            btn.disabled = false;
-            btn.textContent = textoOriginal;
-        }
+    // --- LÓGICA DEL MODAL DE REPORTE PERSONALIZADO ---
+    window.abrirModalReportar = function(idPedido) {
+        pedidoIdParaReportar = idPedido;
+        if (inputMotivoReporte) inputMotivoReporte.value = '';
+        if (modalReportar) modalReportar.style.display = 'flex';
     };
 
-    async function cargarDatosEvaluacion() {
-        if (!contenedorEvaluar) return;
-        try {
-            contenedorEvaluar.innerHTML = '<p class="texto-descripcion">Cargando evaluaciones...</p>';
-            const respuesta = await fetch(`${API_URL}/api/receptor/evaluaciones?receptor_id=${idUsuarioActual}`);
-            const data = await respuesta.json();
+    if (btnCancelarReporte) {
+        btnCancelarReporte.addEventListener('click', () => {
+            if (modalReportar) modalReportar.style.display = 'none';
+            pedidoIdParaReportar = null;
+        });
+    }
 
-            contenedorEvaluar.innerHTML = '';
-            if (!Array.isArray(data) || data.length === 0) {
-                contenedorEvaluar.innerHTML = '<p class="texto-descripcion">No hay lotes aceptados para evaluar.</p>';
+    if (btnEnviarReporte) {
+        btnEnviarReporte.addEventListener('click', async () => {
+            const motivo = inputMotivoReporte ? inputMotivoReporte.value.trim() : '';
+            if (!motivo) {
+                alert('Por favor, escribe un motivo para el reporte.');
                 return;
             }
 
-            const evaluacionesHechas = JSON.parse(localStorage.getItem(`evals_${idUsuarioActual}`) || '{}');
+            btnEnviarReporte.disabled = true;
+            btnEnviarReporte.textContent = 'Enviando...';
 
-            contenedorEvaluar.style.cssText = 'display: flex; flex-direction: column; gap: 12px;';
-            data.forEach(item => {
-                const tarjeta = document.createElement('div');
-                tarjeta.className = 'tarjeta-evaluacion';
-                tarjeta.style.cssText = 'background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 12px;';
-
-                const keyDonador = `lote_${item.idpedidos}_donador_${item.donador?.idusuarios}`;
-                const keyVoluntario = `lote_${item.idpedidos}_voluntario_${item.voluntario?.idusuarios}`;
-
-                let htmlDonador = '';
-                if (item.donador) {
-                    if (evaluacionesHechas[keyDonador]) {
-                        htmlDonador = `<p style="margin: 0; font-size: 0.9rem; color: #28a745;">✓ Donador (${item.donador.nombre}) ya evaluado en este lote.</p>`;
-                    } else {
-                        htmlDonador = `
-                            <div style="display: flex; flex-direction: column; gap: 4px;">
-                                <label style="font-size: 0.9rem;"><strong>Donador:</strong> ${item.donador.nombre} (${item.donador.cuenta})</label>
-                                <div style="display: flex; gap: 8px; align-items: center;">
-                                    <select id="estrellas-donador-${item.idpedidos}" style="padding: 4px; border-radius: 4px;">
-                                        <option value="5">5 Estrellas ⭐⭐⭐⭐⭐</option>
-                                        <option value="4">4 Estrellas ⭐⭐⭐⭐</option>
-                                        <option value="3">3 Estrellas ⭐⭐⭐</option>
-                                        <option value="2">2 Estrellas ⭐⭐</option>
-                                        <option value="1">1 Estrella ⭐</option>
-                                    </select>
-                                    <button type="button" onclick="enviarEvaluacion(${item.idpedidos}, ${item.donador.idusuarios}, 'donador', this)" style="padding: 4px 10px; background: #5c3a40; color: white; border: none; border-radius: 4px; cursor: pointer;">Evaluar Donador</button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                } else {
-                    htmlDonador = `<p style="margin: 0; font-size: 0.9rem; color: #888;">Donador no disponible.</p>`;
-                }
-
-                let htmlVoluntario = '';
-                if (item.voluntario) {
-                    if (evaluacionesHechas[keyVoluntario]) {
-                        htmlVoluntario = `<p style="margin: 0; font-size: 0.9rem; color: #28a745; margin-top: 8px;">✓ Voluntario (${item.voluntario.nombre}) ya evaluado en este lote.</p>`;
-                    } else {
-                        htmlVoluntario = `
-                            <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 8px;">
-                                <label style="font-size: 0.9rem;"><strong>Voluntario:</strong> ${item.voluntario.nombre} (${item.voluntario.cuenta})</label>
-                                <div style="display: flex; gap: 8px; align-items: center;">
-                                    <select id="estrellas-voluntario-${item.idpedidos}" style="padding: 4px; border-radius: 4px;">
-                                        <option value="5">5 Estrellas ⭐⭐⭐⭐⭐</option>
-                                        <option value="4">4 Estrellas ⭐⭐⭐⭐</option>
-                                        <option value="3">3 Estrellas ⭐⭐⭐</option>
-                                        <option value="2">2 Estrellas ⭐⭐</option>
-                                        <option value="1">1 Estrella ⭐</option>
-                                    </select>
-                                    <button type="button" onclick="enviarEvaluacion(${item.idpedidos}, ${item.voluntario.idusuarios}, 'voluntario', this)" style="padding: 4px 10px; background: #5c3a40; color: white; border: none; border-radius: 4px; cursor: pointer;">Evaluar Voluntario</button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                } else {
-                    htmlVoluntario = `<p style="margin: 0; font-size: 0.9rem; color: #888; margin-top: 8px;">Sin voluntario asignado en este lote.</p>`;
-                }
-
-                tarjeta.innerHTML = `
-                    <div style="border-bottom: 1px solid #eee; padding-bottom: 6px;">
-                        <span style="font-weight: bold; color: #5c3a40;">Lote #${item.idpedidos}</span> - <span style="font-size: 0.9rem; color: #666;">${item.descripcion}</span>
-                    </div>
-                    ${htmlDonador}
-                    ${htmlVoluntario}
-                `;
-                contenedorEvaluar.appendChild(tarjeta);
-            });
-        } catch (err) {
-            console.error('Error al cargar evaluaciones:', err);
-        }
+            try {
+                const respuesta = await fetch(`${API_URL}/api/reportes-lotes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pedidos_idpedidos: pedidoIdParaReportar,
+                        usuarios_idusuarios: idUsuarioActual,
+                        motivo: motivo
+                    })
+                });
+                const resultado = await respuesta.json();
+                if (!respuesta.ok) throw new Error(resultado.error || 'Error al reportar');
+                
+                if (modalReportar) modalReportar.style.display = 'none';
+                alert(resultado.mensaje);
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                btnEnviarReporte.disabled = false;
+                btnEnviarReporte.textContent = 'Enviar Reporte';
+            }
+        });
     }
-
-    window.enviarEvaluacion = async function(loteId, evaluadoId, tipo, btn) {
-        const select = document.getElementById(`estrellas-${tipo}-${loteId}`);
-        const estrellas = select ? select.value : 5;
-
-        btn.disabled = true;
-        btn.textContent = 'Guardando...';
-
-        try {
-            const respuesta = await fetch(`${API_URL}/api/evaluar`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    evaluado_id: evaluadoId,
-                    estrellas: Number(estrellas)
-                })
-            });
-
-            const resultado = await respuesta.json();
-            if (!respuesta.ok) throw new Error(resultado.error || 'Error al guardar');
-
-            const evaluacionesHechas = JSON.parse(localStorage.getItem(`evals_${idUsuarioActual}`) || '{}');
-            evaluacionesHechas[`lote_${loteId}_${tipo}_${evaluadoId}`] = true;
-            localStorage.setItem(`evals_${idUsuarioActual}`, JSON.stringify(evaluacionesHechas));
-
-            alert(resultado.mensaje);
-            await cargarDatosEvaluacion();
-        } catch (err) {
-            alert('Error: ' + err.message);
-            btn.disabled = false;
-            btn.textContent = `Evaluar ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
-        }
-    };
 
     window.cambiarEstatusLote = async function(idpedidos, accion, btn) {
         if (btn.disabled) return;
