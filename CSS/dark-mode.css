@@ -314,3 +314,31 @@ input:checked + .slider:before {
     transform: translateX(22px);
     background-color: #03071E;
 }
+
+/* ========================================== */
+/* ADAPTACIÓN DE MODALES PARA MODO OSCURO     */
+/* ========================================== */
+body.dark-mode .modal-contenido {
+    background-color: #430617 !important;
+    color: #ffffff !important;
+    border: 1px solid #6b1226 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-mode .modal-contenido h3 {
+    color: #ff99a8 !important;
+}
+
+body.dark-mode .modal-contenido p {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .modal-contenido textarea {
+    background-color: #370617 !important;
+    color: #ffffff !important;
+    border: 1px solid #6b1226 !important;
+}
+
+body.dark-mode .modal-contenido textarea::placeholder {
+    color: #b0b0b0 !important;
+}

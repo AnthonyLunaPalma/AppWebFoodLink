@@ -20,27 +20,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Elemento del modal genérico de aviso/éxito si existe, o lo creamos dinámicamente
     function mostrarModalAviso(titulo, mensaje, esExito = true) {
         let modalAviso = document.getElementById('modal-aviso-personalizado');
+        const esOscuro = document.body.classList.contains('dark-mode');
+
         if (!modalAviso) {
             modalAviso = document.createElement('div');
             modalAviso.id = 'modal-aviso-personalizado';
             modalAviso.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 2000;';
-            modalAviso.innerHTML = `
-                <div style="background: #fff; padding: 25px; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-                    <h3 id="aviso-titulo" style="margin-bottom: 10px; color: ${esExito ? '#28a745' : '#a02020'};"></h3>
-                    <p id="aviso-mensaje" style="margin-bottom: 20px; color: #555; font-size: 0.95rem;"></p>
-                    <button type="button" id="btn-cerrar-aviso" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Aceptar</button>
-                </div>
-            `;
             document.body.appendChild(modalAviso);
-
-            document.getElementById('btn-cerrar-aviso').onclick = () => {
-                modalAviso.style.display = 'none';
-            };
         }
-        document.getElementById('aviso-titulo').textContent = titulo;
-        document.getElementById('aviso-titulo').style.color = esExito ? '#28a745' : '#a02020';
-        document.getElementById('aviso-mensaje').textContent = mensaje;
+
+        // Estilos dinámicos según el modo oscuro o claro actual
+        const bgColor = esOscuro ? '#430617' : '#fff';
+        const textColor = esOscuro ? '#ffffff' : '#555';
+        const titleColor = esExito ? '#28a745' : '#a02020';
+
+        modalAviso.innerHTML = `
+            <div style="background: ${bgColor}; padding: 25px; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.3); border: 1px solid ${esOscuro ? '#6b1226' : '#e0e0e0'};">
+                <h3 style="margin-bottom: 10px; color: ${titleColor};">${titulo}</h3>
+                <p style="margin-bottom: 20px; color: ${textColor}; font-size: 0.95rem;">${mensaje}</p>
+                <button type="button" id="btn-cerrar-aviso" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Aceptar</button>
+            </div>
+        `;
+
         modalAviso.style.display = 'flex';
+
+        document.getElementById('btn-cerrar-aviso').onclick = () => {
+            modalAviso.style.display = 'none';
+        };
     }
 
     if (btnRecargarPagina) {
