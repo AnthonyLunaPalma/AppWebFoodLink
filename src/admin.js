@@ -22,6 +22,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     const contenedorLotesReportados = document.getElementById('lista-lotes-reportados');
     const filtroRol = document.getElementById('filtro-rol');
 
+    // Elementos del modal personalizado genérico
+    const modalPersonalizado = document.getElementById('modal-personalizado');
+    const modalTitulo = document.getElementById('modal-titulo');
+    const modalMensaje = document.getElementById('modal-mensaje');
+    const modalBotones = document.getElementById('modal-botones');
+
+    function mostrarModalAlerta(titulo, mensaje) {
+        if (!modalPersonalizado) return;
+        modalTitulo.textContent = titulo;
+        modalTitulo.style.color = '#5c3a40';
+        modalMensaje.textContent = mensaje;
+        modalBotones.innerHTML = `
+            <button type="button" id="btn-modal-aceptar" style="padding: 8px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Aceptar</button>
+        `;
+        modalPersonalizado.style.display = 'flex';
+
+        document.getElementById('btn-modal-aceptar').onclick = () => {
+            modalPersonalizado.style.display = 'none';
+        };
+    }
+
+    function mostrarModalConfirmacion(titulo, mensaje, colorBoton, textoBoton, onConfirmar) {
+        if (!modalPersonalizado) return;
+        modalTitulo.textContent = titulo;
+        modalTitulo.style.color = '#a02020';
+        modalMensaje.textContent = mensaje;
+        modalBotones.innerHTML = `
+            <button type="button" id="btn-modal-cancelar" style="padding: 8px 16px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+            <button type="button" id="btn-modal-confirmar" style="padding: 8px 16px; background: ${colorBoton}; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">${textoBoton}</button>
+        `;
+        modalPersonalizado.style.display = 'flex';
+
+        document.getElementById('btn-modal-cancelar').onclick = () => {
+            modalPersonalizado.style.display = 'none';
+        };
+
+        document.getElementById('btn-modal-confirmar').onclick = () => {
+            modalPersonalizado.style.display = 'none';
+            onConfirmar();
+        };
+    }
+
     const STATUS_BD = {
         1: "Notificado al donador",
         2: "Aceptado",
@@ -155,43 +197,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    window.eliminarLoteAdmin = async function(idPedido) {
-        if (!confirm(`¿Estás seguro de eliminar el lote #${idPedido}?`)) return;
-        try {
-            const resp = await fetch(`https://appwebfoodlink.onrender.com/api/pedidos/${idPedido}`, { method: 'DELETE' });
-            const data = await resp.json().catch(() => ({}));
-            if (!resp.ok) throw new Error(data.error || 'Error al eliminar lote');
-            alert('¡Lote eliminado con éxito!');
-            await cargarLotesAdmin();
-            await cargarLotesReportados();
-        } catch (err) {
-            alert('Error: ' + err.message);
-        }
+    window.eliminarLoteAdmin = function(idPedido) {
+        mostrarModalConfirmacion("¿Eliminar lote?", `¿Estás seguro de eliminar el lote #${idPedido}?`, "#dc3545", "Sí, eliminar", async () => {
+            try {
+                const resp = await fetch(`https://appwebfoodlink.onrender.com/api/pedidos/${idPedido}`, { method: 'DELETE' });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) throw new Error(data.error || 'Error al eliminar lote');
+                mostrarModalAlerta("Éxito", "¡Lote eliminado con éxito!");
+                await cargarLotesAdmin();
+                await cargarLotesReportados();
+            } catch (err) {
+                mostrarModalAlerta("Error", err.message);
+            }
+        });
     };
 
-    window.eliminarLoteDesdeReporte = async function(idPedido, idReporte) {
-        if (!confirm(`¿Estás seguro de eliminar permanentemente el lote #${idPedido}?`)) return;
-        try {
-            await fetch(`https://appwebfoodlink.onrender.com/api/pedidos/${idPedido}`, { method: 'DELETE' });
-            await fetch(`https://appwebfoodlink.onrender.com/api/reportes-lotes/${idReporte}`, { method: 'DELETE' });
-            alert('Lote eliminado y reporte cerrado.');
-            await cargarLotesAdmin();
-            await cargarLotesReportados();
-        } catch (err) {
-            alert('Error: ' + err.message);
-        }
+    window.eliminarLoteDesdeReporte = function(idPedido, idReporte) {
+        mostrarModalConfirmacion("¿Eliminar lote reportado?", `¿Estás seguro de eliminar permanentemente el lote #${idPedido}?`, "#dc3545", "Sí, eliminar lote", async () => {
+            try {
+                await fetch(`https://appwebfoodlink.onrender.com/api/pedidos/${idPedido}`, { method: 'DELETE' });
+                await fetch(`https://appwebfoodlink.onrender.com/api/reportes-lotes/${idReporte}`, { method: 'DELETE' });
+                mostrarModalAlerta("Éxito", "Lote eliminado y reporte cerrado.");
+                await cargarLotesAdmin();
+                await cargarLotesReportados();
+            } catch (err) {
+                mostrarModalAlerta("Error", err.message);
+            }
+        });
     };
 
-    window.descartarReporte = async function(idReporte) {
-        if (!confirm(`¿Deseas eliminar este reporte sin borrar el lote?`)) return;
-        try {
-            const resp = await fetch(`https://appwebfoodlink.onrender.com/api/reportes-lotes/${idReporte}`, { method: 'DELETE' });
-            if (!resp.ok) throw new Error('No se pudo eliminar el reporte');
-            alert('Reporte eliminado.');
-            await cargarLotesReportados();
-        } catch (err) {
-            alert('Error: ' + err.message);
-        }
+    window.descartarReporte = function(idReporte) {
+        mostrarModalConfirmacion("¿Descartar reporte?", "¿Deseas eliminar este reporte sin borrar el lote?", "#6c757d", "Sí, descartar", async () => {
+            try {
+                const resp = await fetch(`https://appwebfoodlink.onrender.com/api/reportes-lotes/${idReporte}`, { method: 'DELETE' });
+                if (!resp.ok) throw new Error('No se pudo eliminar el reporte');
+                mostrarModalAlerta("Éxito", "Reporte eliminado.");
+                await cargarLotesReportados();
+            } catch (err) {
+                mostrarModalAlerta("Error", err.message);
+            }
+        });
     };
 
     if (inputBuscarFecha) {
@@ -309,7 +354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             todosLosUsuarios = [];
             await cargarPanelAdmin();
         } catch (err) {
-            alert('Error al aprobar usuario: ' + err.message);
+            mostrarModalAlerta("Error", 'Error al aprobar usuario: ' + err.message);
             btn.disabled = false;
             btn.textContent = textoOriginal;
             btn.style.opacity = '1';
@@ -348,7 +393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     todosLosUsuarios = [];
                     await cargarPanelAdmin();
                 } catch (err) {
-                    alert('No se pudo eliminar: ' + err.message);
+                    mostrarModalAlerta("Error", 'No se pudo eliminar: ' + err.message);
                 } finally {
                     btnConfirmarEliminar.disabled = false;
                     btnConfirmarEliminar.textContent = textoOriginal;
@@ -389,7 +434,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (modalRechazar) modalRechazar.style.display = 'none';
                     await cargarPanelAdmin();
                 } catch (err) {
-                    alert('No se pudo rechazar: ' + err.message);
+                    mostrarModalAlerta("Error", 'No se pudo rechazar: ' + err.message);
                 } finally {
                     btnConfirmarRechazar.disabled = false;
                     btnConfirmarRechazar.textContent = textoOriginal;
@@ -438,7 +483,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const lotes = await respuesta.json();
 
                 if (!lotes || lotes.length === 0) {
-                    alert('No hay lotes registrados para generar el reporte.');
+                    mostrarModalAlerta("Atención", 'No hay lotes registrados para generar el reporte.');
                     return;
                 }
 
@@ -468,10 +513,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.body.removeChild(link); 
 
             } catch (error) {
-                alert('Error al generar el reporte CSV: ' + error.message);
+                mostrarModalAlerta("Error", 'Error al generar el reporte CSV: ' + error.message);
             }
         });
     }
 
-    cargarPanelAdmin();
+cargarPanelAdmin();
 });
